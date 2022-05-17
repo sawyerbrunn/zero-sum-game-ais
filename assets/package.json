@@ -3,5 +3,8 @@
     "autoprefixer": "^10.4.2",
     "postcss": "^8.4.7",
     "tailwindcss": "^3.0.23"
+  },
+  "dependencies": {
+    "chessboard-element": "^1.2.0"
   }
 }

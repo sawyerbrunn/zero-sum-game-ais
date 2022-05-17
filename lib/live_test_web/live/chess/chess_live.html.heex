@@ -1,2 +1,20 @@
 Hello World
 
+<%# <script type="module" src="/node_modules/chessboard-element/index.js"></script> %>
+
+
+<chess-board style="width: 400px"></chess-board>
+
+<script>
+const board = document.querySelector('chess-board');
+    board.position = {
+    d6: 'bK',
+    d4: 'wP',
+    e4: 'wK',
+    e5: 'wP'
+    };
+</script>
+
+
+<script type="module" src="https://unpkg.com/chessboard-element?module"></script>
+
