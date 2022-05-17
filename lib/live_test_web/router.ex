@@ -19,6 +19,7 @@ defmodule LiveTestWeb.Router do
 
     get "/", PageController, :index
     live "/game", GameLive, :index
+    live "/chess", ChessLive
   end
 
   # live "/game", GameLive, :index
