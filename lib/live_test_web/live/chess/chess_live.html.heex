@@ -1,20 +1,47 @@
-Hello World
+<div class="pl-10 pt-20">
 
-<%# <script type="module" src="/node_modules/chessboard-element/index.js"></script> %>
+  <%= if @modal == "chess-modal" do
+    live_component(LiveTest.ChessModalComponent, winner: @winner, game_over_reason: @game_over_reason)  
+   end %>
 
+  <div class="text-center text-3xl px-10">
+    <h1> The Game of Chess </h1>
+  </div>
 
-<chess-board style="width: 400px"></chess-board>
+  <div class="grid grid-cols-8 space-x-2 space-y-2">
 
-<script>
-const board = document.querySelector('chess-board');
-    board.position = {
-    d6: 'bK',
-    d4: 'wP',
-    e4: 'wK',
-    e5: 'wP'
-    };
-</script>
+    <div class="col-start-1 col-span-1 border border-gray-200 rounded-md">
+      Game details here
+    </div>
 
+    <div class="col-start-2 col-span-6">
+      <div class="flex justify-center" phx-update="ignore">
+        <chess-board
+            style="width: 600px; height: 600px"
+            id="chessBoard"
+            phx-update="ignore"
+            phx-hook="chessBoard"
+            position="start"
+            draggable-pieces>
+        </chess-board>
+      </div>
+    </div>
 
-<script type="module" src="https://unpkg.com/chessboard-element?module"></script>
+    <div class="col-start-8 col-span-1">
+      <div class="flex justify-center">
+        <div>
+          <h2> Some Buttons </h2>
+          <div class="py-2">
+            <button id="setStartBtn" class="text-indigo-500">Start Position</button>
+          </div>
+          <div class="py-2">
+            <button id="undoBtn" class="text-indigo-500">Undo Last Move</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
+  <script type="module" src="https://unpkg.com/chessboard-element?module"></script>
+
+</div>
