@@ -6,6 +6,7 @@
     "tailwindcss": "^3.0.23"
   },
   "dependencies": {
+    "@chrisoakman/chessboardjs": "^1.0.0",
     "chess.js": "^0.13.2",
     "chessboard-element": "^1.2.0"
   }
