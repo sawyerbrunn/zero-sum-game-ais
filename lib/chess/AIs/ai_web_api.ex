@@ -1,4 +1,4 @@
-defmodule LiveTest.Chess.WebAPI do
+defmodule LiveTest.Chess.AIWebApi do
   alias LiveTest.Chess.Move
   require Logger
 

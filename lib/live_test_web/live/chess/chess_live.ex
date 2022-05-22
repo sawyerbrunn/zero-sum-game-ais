@@ -3,7 +3,7 @@ defmodule LiveTestWeb.ChessLive do
   require Logger
 
   alias LiveTest.Chess.AILevelZero
-  alias LiveTest.Chess.AIStockfishApi
+  alias LiveTest.Chess.AIWebApi
 
   @defaults [modal: nil, winner: nil, game_over_reason: nil]
 
@@ -38,9 +38,9 @@ defmodule LiveTestWeb.ChessLive do
   end
 
   def handle_event("request-move", %{"fen" => game_fen, "turn" => turn} = _params, socket) do
-    # move = AILevelZero.find_move(game_fen, turn)
-    # :timer.sleep(1000)
-    move = AIStockfishApi.find_move(game_fen, turn)
+    move = AILevelZero.find_move(game_fen, turn)
+    :timer.sleep(250)
+    # move = AIWebApi.find_move(game_fen, turn)
     {:noreply,
       socket
       |> push_event("receive-move", %{source: move.source, target: move.target, displayName: move.display_name})

@@ -26,6 +26,7 @@ import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
 import { Chess } from "chess.js"
+var stockfish = require("stockfish")
 require('@chrisoakman/chessboardjs/dist/chessboard-1.0.0.min.js')
 
 
