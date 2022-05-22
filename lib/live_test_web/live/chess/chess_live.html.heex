@@ -1,4 +1,17 @@
 <div class="pl-10 pt-20">
+  <link rel="stylesheet"
+        href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css"
+        integrity="sha384-q94+BZtLrkL1/ohfjR8c6L+A6qzNH9R2hBLwyoAfu3i/WCvQjzL2RQJ3uNHDISdU"
+        crossorigin="anonymous">
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"
+    integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2"
+    crossorigin="anonymous"></script>
+
+  <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"
+        integrity="sha384-8Vi8VHwn3vjQ9eUHUxex3JSN/NFqUg3QbPyX8kWyb93+8AC/pPWTzj+nHtbC5bxD"
+        crossorigin="anonymous"></script>
+
 
   <%= if @modal == "chess-modal" do
     live_component(LiveTest.ChessModalComponent, winner: @winner, game_over_reason: @game_over_reason)  
@@ -15,15 +28,16 @@
     </div>
 
     <div class="col-start-2 col-span-6">
-      <div class="flex justify-center" phx-update="ignore">
-        <chess-board
-            style="width: 600px; height: 600px"
-            id="chessBoard"
-            phx-update="ignore"
-            phx-hook="chessBoard"
-            position="start"
-            draggable-pieces>
-        </chess-board>
+      <div class="flex justify-center">
+        <div phx-update="ignore">
+          <div id="myBoard" phx-hook="myBoard" style="width: 600px; height: 600px" ></div>
+          <label>Status:</label>
+          <div id="status"></div>
+          <label>FEN:</label>
+          <div id="fen"></div>
+          <label>PGN:</label>
+          <div id="pgn"></div>
+        </div>
       </div>
     </div>
 
@@ -44,7 +58,4 @@
       </div>
     </div>
   </div>
-
-  <script type="module" src="https://unpkg.com/chessboard-element?module"></script>
-
 </div>

@@ -25,209 +25,203 @@ import "phoenix_html"
 import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
-import { Chess } from 'chess.js'
-import { makeRandomMove } from "./random_move.js"
-import { makeMinimaxMove } from "./minimax_move.js" 
+import { Chess } from "chess.js"
+require('@chrisoakman/chessboardjs/dist/chessboard-1.0.0.min.js')
+
 
 let hooks = {}
-hooks.chessBoard = {
+hooks.myBoard = {
   mounted() {
+    var mount = this;
     // CHESS CODE BELOW
 
     // NOTE: this example uses the chess.js library:
     // https://github.com/jhlywa/chess.js
 
-    const board = document.querySelector('chess-board');
-    const game = new Chess();
-    window.board = board;
+    var board = null
+    var game = new Chess()
+    var $status = $('#status')
+    var $fen = $('#fen')
+    var $pgn = $('#pgn')
+
     window.game = game;
 
-    var mount = this;
+    var whiteSquareGrey = '#a9a9a9'
+    var blackSquareGrey = '#696969'
 
-
-    // HIGHLIGHT LEGAL MOVES LOGIC
-    const highlightStyles = document.createElement('style');
-    document.head.append(highlightStyles);
-    const whiteSquareGrey = '#a9a9a9';
-    const blackSquareGrey = '#696969';
-
-    function removeGreySquares() {
-      highlightStyles.textContent = '';
+    function removeGreySquares () {
+      $('#myBoard .square-55d63').css('background', '')
     }
 
-    function greySquare(square) {
-      const highlightColor = (square.charCodeAt(0) % 2) ^ (square.charCodeAt(1) % 2)
-          ? whiteSquareGrey
-          : blackSquareGrey;
-      
-      highlightStyles.textContent += `
-        chess-board::part(${square}) {
-          background-color: ${highlightColor};
-        }
-      `;
-    }
+    function greySquare (square) {
+      var $square = $('#myBoard .square-' + square)
 
-    this.handleEvent('refresh-board', (e) => {
-      console.log('updating board!')
-      board.setPosition(game.fen());
-    });
-
-    this.handleEvent('set-fen', (e) => {
-      console.log("Setting fen")
-      console.log(e.fen)
-      game.load(e.fen)
-      board.setPosition(game.fen());
-    });
-
-    // PICK UP PIECES LOGIC
-    board.addEventListener('drag-start', (e) => {
-      const {source, piece} = e.detail;
-
-      // do not pick up pieces if the game is over
-      if (game.game_over()) {
-        e.preventDefault();
-        return;
+      var background = whiteSquareGrey
+      if ($square.hasClass('black-3c85d')) {
+        background = blackSquareGrey
       }
+
+      $square.css('background', background)
+    }
+
+    function onDragStart (source, piece) {
+      // do not pick up pieces if the game is over
+      if (game.game_over()) return false
 
       // or if it's not that side's turn
       if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
           (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
-        e.preventDefault();
-        return;
+        return false
       }
-    });
+    }
 
-    // DROP PIECES LOGIC
-    board.addEventListener('drop', (e) => {
-      console.log(e.dataTransfer);
-      const {source, target, setAction} = e.detail;
-
-      removeGreySquares();
+    function onDrop (source, target) {
+      removeGreySquares()
 
       // see if the move is legal
-      const move = game.move({
+      var move = game.move({
         from: source,
         to: target,
         promotion: 'q' // NOTE: always promote to a queen for example simplicity
-      });
-
-      checkGameOver();
-
-      if (game.game_over()) {
-        return
-      }
-
+      })
 
       // illegal move
       if (move === null) {
-        setAction('snapback');
-      } else  if (game.turn() === 'b') {
-        // make random legal move for black
-        // window.setTimeout(makeRandomMove(game, board), 2500);
-        window.setTimeout(makeMinimaxMove(game, board, 3), 250);
-        checkGameOver();
+        return 'snapback'
+      } else if (game.turn() === 'b') {
+        requestMoveFromServer(game.fen(), game.turn());
       }
-    });
-
-    function checkGameOver() {
-      if (game.game_over()) {
-        const winner = other(game.turn());
-        const gameOverReason = getGameOverReason();
-        console.log('Game Over!');
-        console.log(winner);
-        console.log(gameOverReason);
-        // send message to the server
-        mount.pushEvent("game-over", {winner, gameOverReason})
-      }
+      updateStatus();
     }
 
-    function other(color) {
-      if (color == 'b') {
-        return 'w'
-      } else {
-        return 'b'
-      }
-    }
-
-    function getGameOverReason() {
-      if (game.in_checkmate()) {
-        return 'checkmate';
-      } else if (game.in_draw()) {
-        return 'draw';
-      } else if (game.in_stalemate()) {
-        return 'stalemate';
-      } else if (game.in_threefold_repetition()) {
-        return 'threefold_repetition';
-      } else if (game.insufficient_material()) {
-        return 'insufficient_material';
-      }
-    }
-
-    board.addEventListener('mouseover-square', (e) => {
-      const {square, piece} = e.detail;
-
+    function onMouseoverSquare (square, piece) {
       // get list of possible moves for this square
-      const moves = game.moves({
+      var moves = game.moves({
         square: square,
         verbose: true
-      });
+      })
 
       // exit if there are no moves available for this square
-      if (moves.length === 0) {
-        return;
-      }
+      if (moves.length === 0) return
 
       // highlight the square they moused over
-      greySquare(square);
+      greySquare(square)
 
       // highlight the possible squares for this piece
-      for (const move of moves) {
-        greySquare(move.to);
+      for (var i = 0; i < moves.length; i++) {
+        greySquare(moves[i].to)
       }
+    }
+
+    function onMouseoutSquare (square, piece) {
+      removeGreySquares()
+    }
+
+    function onSnapEnd () {
+      board.position(game.fen())
+    }
+
+    var config = {
+      draggable: true,
+      position: 'start',
+      onDragStart: onDragStart,
+      onDrop: onDrop,
+      onMouseoutSquare: onMouseoutSquare,
+      onMouseoverSquare: onMouseoverSquare,
+      onSnapEnd: onSnapEnd
+    }
+    board = Chessboard('myBoard', config)
+    // END CHESSBOARD.JS FUNCTIONS
+
+    window.board = board
+
+
+
+    // PUSH EVENTS TO SERVER
+
+    // Asks the server to send a legal move based on the game fen and the current turn.
+    function requestMoveFromServer(fen, turn) {
+      mount.pushEvent("request-move", {fen, turn});
+    }
+
+    // HANDLE EVENTS FROM SERVER
+    this.handleEvent('refresh-board', (e) => {
+      console.log('updating board!')
+      board.position(game.fen());
     });
 
-    board.addEventListener('mouseout-square', (e) => {
-      removeGreySquares();
+    this.handleEvent('set-fen', (e) => {
+      console.log("Setting fen!")
+      console.log(e.fen)
+      game.load(e.fen)
+      board.position(game.fen());
     });
 
-    board.addEventListener('snap-end', (e) => {
-      board.setPosition(game.fen())
-    });
+    this.handleEvent('receive-move', (e) => {
+      console.log('Received move from server:');
+      console.log(e);
 
-    // CUSTOM TO HTML
+      var move = game.move({
+        from: e.source,
+        to: e.target,
+        promotion: 'q' // NOTE: always promote to a queen for example simplicity
+      });
 
+      board.position(game.fen());
+    })
+
+
+    // HTML Helpers
+    // BUTTONS
     document.querySelector('#setStartBtn').addEventListener('click', () => {
-        game.reset();
+      game.reset();
 
-        board.setPosition(game.fen())
-      });
+      board.position(game.fen());
+    });
 
-      document.querySelector('#undoBtn').addEventListener('click', () => {
-        game.undo()
-        game.undo()
+    document.querySelector('#undoBtn').addEventListener('click', () => {
+      game.undo();
+      game.undo();
 
-        board.setPosition(game.fen());
-      });
+      board.position(game.fen());
+    });
 
-
-    // // AI Functions
-    // function makeRandomMove () {
-    //   let possibleMoves = game.moves();
-
-    //   // game over
-    //   if (possibleMoves.length === 0) {
-    //       return;
-    //   }
-
-    //   const randomIdx = Math.floor(Math.random() * possibleMoves.length);
-    //   game.move(possibleMoves[randomIdx]);
-    //   board.setPosition(game.fen());
-    // }
-
+    // UPDATE STATUS TAGS 
+    function updateStatus () {
+      var status = ''
+    
+      var moveColor = 'White'
+      if (game.turn() === 'b') {
+        moveColor = 'Black'
+      }
+    
+      // checkmate?
+      if (game.in_checkmate()) {
+        status = 'Game over, ' + moveColor + ' is in checkmate.'
+      }
+    
+      // draw?
+      else if (game.in_draw()) {
+        status = 'Game over, drawn position'
+      }
+    
+      // game still on
+      else {
+        status = moveColor + ' to move'
+    
+        // check?
+        if (game.in_check()) {
+          status += ', ' + moveColor + ' is in check'
+        }
+      }
+    
+      $status.html(status);
+      $fen.html(game.fen());
+      $pgn.html(game.pgn());
+    }
 
   }
 }
-
 
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")

@@ -2,6 +2,9 @@ defmodule LiveTestWeb.ChessLive do
   use LiveTestWeb, :live_view
   require Logger
 
+  alias LiveTest.Chess.AILevelZero
+  alias LiveTest.Chess.AIStockfishApi
+
   @defaults [modal: nil, winner: nil, game_over_reason: nil]
 
   @impl true
@@ -30,9 +33,18 @@ defmodule LiveTestWeb.ChessLive do
   end
 
   def handle_event("set-fen", _, socket) do
-    IO.inspect("here")
     fen = "r4Q2/pbpk3p/1p5P/n2P4/4Q3/8/PPP1P3/RNB1KBNR w KQ - 1 19"
     {:noreply, push_event(socket, "set-fen", %{fen: fen})}
+  end
+
+  def handle_event("request-move", %{"fen" => game_fen, "turn" => turn} = _params, socket) do
+    # move = AILevelZero.find_move(game_fen, turn)
+    # :timer.sleep(1000)
+    move = AIStockfishApi.find_move(game_fen, turn)
+    {:noreply,
+      socket
+      |> push_event("receive-move", %{source: move.source, target: move.target, displayName: move.display_name})
+   }
   end
 
   def handle_event(message, params, socket) do
