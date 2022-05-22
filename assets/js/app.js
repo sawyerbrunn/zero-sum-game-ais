@@ -152,6 +152,14 @@ hooks.myBoard = {
       mount.pushEvent("request-move", {fen, turn});
     }
 
+    function pushHistory(history) {
+      mount.pushEvent("update-history", {history});
+    };
+
+    // function announceGameOver(status) {
+    //   mount.pushEvent("game-over", {status});
+    // }
+
     function requestAiMove() {
       var move = getMinimaxMove(game, 3);
       game.move(move);
@@ -168,6 +176,7 @@ hooks.myBoard = {
       console.log(e.fen)
       game.load(e.fen)
       board.position(game.fen());
+      updateStatus();
     });
 
     this.handleEvent('receive-move', (e) => {
@@ -186,6 +195,7 @@ hooks.myBoard = {
       requestAiMove();
 
       board.position(game.fen());
+      updateStatus();
     })
 
 
@@ -216,11 +226,13 @@ hooks.myBoard = {
       // checkmate?
       if (game.in_checkmate()) {
         status = 'Game over, ' + moveColor + ' is in checkmate.'
+        // announceGameOver(status);
       }
     
       // draw?
       else if (game.in_draw()) {
         status = 'Game over, drawn position'
+        // announceGameOver(status);
       }
     
       // game still on
@@ -236,6 +248,7 @@ hooks.myBoard = {
       $status.html(status);
       $fen.html(game.fen());
       $pgn.html(game.pgn());
+      pushHistory(game.history());
     }
 
   }

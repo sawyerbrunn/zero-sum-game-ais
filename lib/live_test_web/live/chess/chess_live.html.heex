@@ -1,4 +1,4 @@
-<div class="pl-10 pt-20">
+<div class="pl-10">
   <link rel="stylesheet"
         href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css"
         integrity="sha384-q94+BZtLrkL1/ohfjR8c6L+A6qzNH9R2hBLwyoAfu3i/WCvQjzL2RQJ3uNHDISdU"
@@ -14,46 +14,54 @@
 
 
   <%= if @modal == "chess-modal" do
-    live_component(LiveTest.ChessModalComponent, winner: @winner, game_over_reason: @game_over_reason)  
+    live_component(LiveTest.ChessModalComponent, status: @game_over_status)  
    end %>
 
-  <div class="text-center text-3xl px-10">
-    <h1> The Game of Chess </h1>
-  </div>
-
-  <div class="grid grid-cols-8 space-x-2 space-y-2">
-
-    <div class="col-start-1 col-span-1 border border-gray-200 rounded-md">
-      Game details here
+  <div class="grid grid-cols-7 space-x-2 space-y-2">
+    <div class="col-start-2 col-span-4">
+      <div class="text-3xl text-center">
+        <h1> The Game of Chess </h1>
+      </div>
     </div>
 
-    <div class="col-start-2 col-span-6">
+    <div class="col-start-1 col-span-1 border border-gray-200 rounded-md">
+      <h2> Some Buttons </h2>
+      <div class="py-2">
+        <button id="setStartBtn" class="text-indigo-500">Start Position</button>
+      </div>
+      <div class="py-2">
+        <button id="undoBtn" class="text-indigo-500">Undo Last Move</button>
+      </div>
+      <div class="py-2">
+        <button id="set-fen" phx-click="set-fen" class="text-indigo-500">Set Fen</button>
+      </div>
+    </div>
+
+    <div class="col-start-2 col-span-4">
       <div class="flex justify-center">
         <div phx-update="ignore">
           <div id="myBoard" phx-hook="myBoard" style="width: 600px; height: 600px" ></div>
-          <label>Status:</label>
-          <div id="status"></div>
-          <label>FEN:</label>
-          <div id="fen"></div>
-          <label>PGN:</label>
-          <div id="pgn"></div>
         </div>
       </div>
     </div>
 
-    <div class="col-start-8 col-span-1">
-      <div class="flex justify-center">
+    <div class="col-start-6 col-span-2">
+      <div class="flex justify-left">
         <div>
-          <h2> Some Buttons </h2>
-          <div class="py-2">
-            <button id="setStartBtn" class="text-indigo-500">Start Position</button>
+          <label>Status:</label>
+          <div id="status" phx-update="ignore">
           </div>
-          <div class="py-2">
-            <button id="undoBtn" class="text-indigo-500">Undo Last Move</button>
+          <label>FEN:</label>
+          <div id="fen" phx-update="ignore" class="text-ellipsis">
           </div>
-          <div class="py-2">
-            <button id="set-fen" phx-click="set-fen" class="text-indigo-500">Set Fen</button>
+          <label class="hidden">PGN:</label>
+          <div id="pgn" phx-update="ignore" class="hidden">
           </div>
+          <div>
+            <label> Custom History:</label>
+            <.game_history_component history={@history} />
+          </div>
+          
         </div>
       </div>
     </div>
