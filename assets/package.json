@@ -8,6 +8,7 @@
   "dependencies": {
     "@chrisoakman/chessboardjs": "^1.0.0",
     "chess.js": "^0.13.2",
-    "jquery": "^3.6.0"
+    "jquery": "^3.6.0",
+    "node-fetch": "^2.6.1"
   }
 }

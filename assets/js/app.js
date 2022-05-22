@@ -26,8 +26,12 @@ import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
 import { Chess } from "chess.js"
-var stockfish = require("stockfish")
 require('@chrisoakman/chessboardjs/dist/chessboard-1.0.0.min.js')
+
+// AI Helpers
+// import { makeRandomMove } from 'makeRandomMove'
+import { getRandomMove } from "./get_random_move"
+import { getMinimaxMove } from "./get_minimax_move"
 
 
 let hooks = {}
@@ -91,6 +95,9 @@ hooks.myBoard = {
         return 'snapback'
       } else if (game.turn() === 'b') {
         requestMoveFromServer(game.fen(), game.turn());
+        // let aiMove = getRandomMove(game);
+        // board.position(game.fen());
+        // requestAiMove();
       }
       updateStatus();
     }
@@ -145,6 +152,11 @@ hooks.myBoard = {
       mount.pushEvent("request-move", {fen, turn});
     }
 
+    function requestAiMove() {
+      var move = getMinimaxMove(game, 3);
+      game.move(move);
+    }
+
     // HANDLE EVENTS FROM SERVER
     this.handleEvent('refresh-board', (e) => {
       console.log('updating board!')
@@ -162,11 +174,16 @@ hooks.myBoard = {
       console.log('Received move from server:');
       console.log(e);
 
-      var move = game.move({
-        from: e.source,
-        to: e.target,
-        promotion: 'q' // NOTE: always promote to a queen for example simplicity
-      });
+
+      // TODO: implement server-side chess AI
+      // var move = game.move({
+      //   from: e.source,
+      //   to: e.target,
+      //   promotion: 'q' // NOTE: always promote to a queen for example simplicity
+      // });
+
+      // TEMP FIX FOR NOW
+      requestAiMove();
 
       board.position(game.fen());
     })

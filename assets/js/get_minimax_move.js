@@ -1,4 +1,4 @@
-import {evaluateBoard} from "./evaluate_game.js"
+import {evaluateBoard} from "./evaluate_board.js"
 
 function minimax(game, depth, alpha, beta, isMaximizingPlayer, sum, color) {
     // positionCount++; 
@@ -74,7 +74,7 @@ function minimax(game, depth, alpha, beta, isMaximizingPlayer, sum, color) {
 }
 
 // AI Functions
-function makeMinimaxMove (game, board, depth) {
+function getMinimaxMove (game, depth) {
     
     var move;
     var score;
@@ -84,8 +84,10 @@ function makeMinimaxMove (game, board, depth) {
     move = result[0];
     score = result[1];
 
-    game.move(move);
-    board.setPosition(game.fen());
+    // game.move(move);
+    // board.setPosition(game.fen());
+
+    return move;
 }
 
-export { makeMinimaxMove }
+export { getMinimaxMove }

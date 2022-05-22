@@ -12,6 +12,8 @@ defmodule LiveTest.Application do
       LiveTestWeb.Telemetry,
       # Start the PubSub system
       {Phoenix.PubSub, name: LiveTest.PubSub},
+
+      {NodeJS.Supervisor, [path: "/Users/sawyerbrunn/CodeProjects/live_test/assets/js", pool_size: 4]},
       # Start the Endpoint (http/https)
       LiveTestWeb.Endpoint
       # Start a worker by calling: LiveTest.Worker.start_link(arg)

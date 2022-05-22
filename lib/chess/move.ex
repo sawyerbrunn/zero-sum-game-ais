@@ -6,6 +6,4 @@ defmodule LiveTest.Chess.Move do
     display_name: ""
   ]
 
-
-
 end
