@@ -12,7 +12,7 @@ function getRandomMove (game) {
     const randomIdx = Math.floor(Math.random() * possibleMoves.length);
     // game.move(possibleMoves[randomIdx]);
     // board.setPosition(game.fen());
-    return possibleMoves[randomIdx];
+    return game.move(possibleMoves[randomIdx]);
 }
 
 

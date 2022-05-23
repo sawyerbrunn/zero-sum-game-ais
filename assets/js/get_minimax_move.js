@@ -6,7 +6,9 @@ function minimax(game, depth, alpha, beta, isMaximizingPlayer, sum, color) {
     var children = game.moves();
     
     // Sort moves randomly, so the same move isn't always picked on ties
-    children.sort(function(a, b){return 0.5 - Math.random()});
+    if (game.history().length < 4) {
+        children.sort(function(a, b){return 0.5 - Math.random()});
+    }
     
     var currMove;
     // Maximum depth exceeded or node is a terminal node (no children)
@@ -25,7 +27,7 @@ function minimax(game, depth, alpha, beta, isMaximizingPlayer, sum, color) {
 
         // Note: in our case, the 'children' are simply modified game states
         var currPrettyMove = game.move(currMove);
-        var newSum = evaluateBoard(currPrettyMove, sum, color);
+        var newSum = evaluateBoard(game, currPrettyMove, sum, color);
         var [childBestMove, childValue] = minimax(game, depth - 1, alpha, beta, !isMaximizingPlayer, newSum, color);
         
         game.undo();
@@ -74,12 +76,22 @@ function minimax(game, depth, alpha, beta, isMaximizingPlayer, sum, color) {
 }
 
 // AI Functions
-function getMinimaxMove (game, depth) {
+function getMinimaxMove (game, depth, prevSum) {
     
     var move;
     var score;
 
-    var result = minimax(game, depth, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, true, 0, game.turn());
+    var startSum;
+    if (game.turn() === 'w') {
+        startSum = -prevSum
+    } else {
+        startSum = prevSum
+    }
+
+    var result = minimax(game, depth, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, true, startSum, game.turn());
+
+    // console.log('minimax result')
+    // console.log(result);
 
     move = result[0];
     score = result[1];

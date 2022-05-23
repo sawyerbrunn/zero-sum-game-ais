@@ -31,6 +31,7 @@ require('@chrisoakman/chessboardjs/dist/chessboard-1.0.0.min.js')
 // AI Helpers
 import { getRandomMove } from "./get_random_move"
 import { getMinimaxMove } from "./get_minimax_move"
+import { evaluateBoard } from "./evaluate_board"
 
 
 let hooks = {}
@@ -49,6 +50,7 @@ hooks.myBoard = {
     var $fen = $('#fen');
     var $pgn = $('#pgn');
     var playingAiBattle = false;
+    window.globalSum = 0;
 
     // Initialize player types (can be changed by user)
     window.whitePlayerType = 'manual';
@@ -128,7 +130,10 @@ hooks.myBoard = {
       // illegal move
       if (move === null) {
         return 'snapback'
-      } else if (game.turn() === 'b' && window.blackPlayerType != 'manual') {
+      } else {
+        window.globalSum = evaluateBoard(game, move, window.globalSum, 'b'); // IDK why this is 'b'
+      }
+      if (game.turn() === 'b' && window.blackPlayerType != 'manual') {
         requestMoveFromServer(game.fen(), game.turn());
       } else if (game.turn() === 'w' && window.whitePlayerType != 'manual') {
         requestMoveFromServer(game.fen(), game.turn());
@@ -139,6 +144,7 @@ hooks.myBoard = {
       } else if (currentTurn === 'b') {
         highlightBlackMove(source, target);
       }
+
       updateStatus();
     }
 
@@ -216,11 +222,13 @@ hooks.myBoard = {
         // highlight white AI's move
         let move = getWhiteAiMove(game);
         game.move(move);
+        window.globalSum = evaluateBoard(game, move, window.globalSum, 'b');
         highlightWhiteMove(move.from, move.to);
       } else {
         // highlight black AI's move
         let move = getBlackAiMove(game);
         game.move(move);
+        window.globalSum = evaluateBoard(game, move, window.globalSum, 'b');
         highlightBlackMove(move.from, move.to);
       }
       board.position(game.fen());
@@ -228,11 +236,12 @@ hooks.myBoard = {
 
     function getWhiteAiMove(game) {
       if (whitePlayerType === 'manual') {
+        alert('white AI move called, but player type is manual!')
         return
       } else if (whitePlayerType === 'ai_random') {
         return getRandomMove(game);
       } else if (whitePlayerType === 'ai_minimax') {
-        return getMinimaxMove(game, whitePlayerDepth);
+        return getMinimaxMove(game, whitePlayerDepth, window.globalSum);
       }
     }
 
@@ -242,7 +251,7 @@ hooks.myBoard = {
       } else if (blackPlayerType === 'ai_random') {
         return getRandomMove(game);
       } else if (blackPlayerType === 'ai_minimax') {
-        return getMinimaxMove(game, blackPlayerDepth);
+        return getMinimaxMove(game, blackPlayerDepth, window.globalSum);
       }
     }
 
@@ -257,6 +266,7 @@ hooks.myBoard = {
       console.log(e.fen)
       game.load(e.fen)
       board.position(game.fen());
+      window.globalSum = 0; // TODO: Update correctly
       removeAllHighlights();
       updateStatus();
     });
