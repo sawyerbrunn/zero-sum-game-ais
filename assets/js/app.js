@@ -29,7 +29,6 @@ import { Chess } from "chess.js"
 require('@chrisoakman/chessboardjs/dist/chessboard-1.0.0.min.js')
 
 // AI Helpers
-// import { makeRandomMove } from 'makeRandomMove'
 import { getRandomMove } from "./get_random_move"
 import { getMinimaxMove } from "./get_minimax_move"
 
@@ -39,20 +38,28 @@ hooks.myBoard = {
   mounted() {
     var mount = this;
     // CHESS CODE BELOW
+    // NOTE: The code below is an adaptation of the chessboard-js examples 5000-5005
+    // https://chessboardjs.com/examples#5000
 
-    // NOTE: this example uses the chess.js library:
-    // https://github.com/jhlywa/chess.js
+    var board = null;
+    var $board = $('#myBoard');
+    var game = new Chess();
+    var squareToHighlight = null;
+    var squareClass = 'square-55d63';
+    var $status = $('#status');
+    var $fen = $('#fen');
+    var $pgn = $('#pgn');
 
-    var board = null
-    var game = new Chess()
-    var $status = $('#status')
-    var $fen = $('#fen')
-    var $pgn = $('#pgn')
+    // Initialize player types (can be changed by user)
+    window.whitePlayerType = 'manual';
+    window.whitePlayerDepth = null;
+    window.blackPlayerType = 'ai_minimax';
+    window.blackPlayerDepth = 3;
 
     window.game = game;
 
-    var whiteSquareGrey = '#a9a9a9'
-    var blackSquareGrey = '#696969'
+    const whiteSquareGrey = '#a9a9a9';
+    const blackSquareGrey = '#696969';
 
     function removeGreySquares () {
       $('#myBoard .square-55d63').css('background', '')
@@ -69,6 +76,32 @@ hooks.myBoard = {
       $square.css('background', background)
     }
 
+    function highlightWhiteMove(from, to) {
+      // highlight white's move
+      removeHighlights('white')
+      $board.find('.square-' + from).addClass('highlight-white')
+      $board.find('.square-' + to).addClass('highlight-white')
+    };
+
+    function highlightBlackMove(from, to) {
+      // highlight white's move
+      removeHighlights('black')
+      $board.find('.square-' + from).addClass('highlight-black')
+      $board.find('.square-' + to).addClass('highlight-black')
+    };
+    // color is 'white' or 'black'
+    function removeHighlights (color) {
+      $board.find('.' + squareClass)
+        .removeClass('highlight-' + color)
+    }
+
+    // remove all highlighs from squares
+    function removeAllHighlights() {
+      removeHighlights('white');
+      removeHighlights('black');
+      squareToHighlight = null;
+    }
+
     function onDragStart (source, piece) {
       // do not pick up pieces if the game is over
       if (game.game_over()) return false
@@ -80,7 +113,9 @@ hooks.myBoard = {
       }
     }
 
+    // TODO: Allow dynamic piece promotion
     function onDrop (source, target) {
+      let currentTurn = game.turn();
       removeGreySquares()
 
       // see if the move is legal
@@ -93,11 +128,16 @@ hooks.myBoard = {
       // illegal move
       if (move === null) {
         return 'snapback'
-      } else if (game.turn() === 'b') {
+      } else if (game.turn() === 'b' && window.blackPlayerType != 'manual') {
         requestMoveFromServer(game.fen(), game.turn());
-        // let aiMove = getRandomMove(game);
-        // board.position(game.fen());
-        // requestAiMove();
+      } else if (game.turn() === 'w' && window.whitePlayerType != 'manual') {
+        requestMoveFromServer(game.fen(), game.turn());
+      }
+
+      if (currentTurn === 'w') {
+        highlightWhiteMove(source, target);
+      } else if (currentTurn === 'b') {
+        highlightBlackMove(source, target);
       }
       updateStatus();
     }
@@ -126,22 +166,32 @@ hooks.myBoard = {
     }
 
     function onSnapEnd () {
-      board.position(game.fen())
+      board.position(game.fen());
     }
+
+    // // NOTE: This is hard-coded for black as an AI
+    // function onMoveEnd () {
+    //   $board.find('.square-' + squareToHighlight)
+    //     .addClass('highlight-black')
+    // }
 
     var config = {
       draggable: true,
       position: 'start',
       onDragStart: onDragStart,
       onDrop: onDrop,
+      // onMoveEnd: onMoveEnd,
       onMouseoutSquare: onMouseoutSquare,
       onMouseoverSquare: onMouseoverSquare,
       onSnapEnd: onSnapEnd
     }
     board = Chessboard('myBoard', config)
+    $(window).resize(board.resize);
+
     // END CHESSBOARD.JS FUNCTIONS
 
-    window.board = board
+    window.board = board;
+    updateStatus();
 
 
 
@@ -161,8 +211,41 @@ hooks.myBoard = {
     // }
 
     function requestAiMove() {
-      var move = getMinimaxMove(game, 3);
-      game.move(move);
+      let currentTurn = game.turn();
+      // var move = getMinimaxMove(game, 3);
+      // game.move(move);
+
+      if (currentTurn === 'w') {
+        // highlight white AI's move
+        let move = getWhiteAiMove(game);
+        game.move(move);
+        highlightWhiteMove(move.from, move.to);
+      } else {
+        // highlight black AI's move
+        let move = getBlackAiMove(game);
+        game.move(move);
+        highlightBlackMove(move.from, move.to);
+      }
+    }
+
+    function getWhiteAiMove(game) {
+      if (whitePlayerType === 'manual') {
+        return
+      } else if (whitePlayerType === 'ai_random') {
+        return getRandomMove(game);
+      } else if (whitePlayerType === 'ai_minimax') {
+        return getMinimaxMove(game, whitePlayerDepth);
+      }
+    }
+
+    function getBlackAiMove(game) {
+      if (blackPlayerType === 'manual') {
+        return
+      } else if (blackPlayerType === 'ai_random') {
+        return getRandomMove(game);
+      } else if (blackPlayerType === 'ai_minimax') {
+        return getMinimaxMove(game, blackPlayerDepth);
+      }
     }
 
     // HANDLE EVENTS FROM SERVER
@@ -176,12 +259,23 @@ hooks.myBoard = {
       console.log(e.fen)
       game.load(e.fen)
       board.position(game.fen());
+      removeAllHighlights();
       updateStatus();
     });
 
+    this.handleEvent('update-black-player-settings', (e) => {
+      window.blackPlayerType = e.type;
+      window.blackPlayerDepth = e.depth;
+    });
+
+    this.handleEvent('update-white-player-settings', (e) => {
+      window.whitePlayerType = e.type;
+      window.whitePlayerDepth = e.depth;
+    });
+
     this.handleEvent('receive-move', (e) => {
-      console.log('Received move from server:');
-      console.log(e);
+      // console.log('Received move from server:');
+      // console.log(e);
 
 
       // TODO: implement server-side chess AI
@@ -196,6 +290,9 @@ hooks.myBoard = {
 
       board.position(game.fen());
       updateStatus();
+
+
+      // Maybe request another move here
     })
 
 
@@ -205,13 +302,35 @@ hooks.myBoard = {
       game.reset();
 
       board.position(game.fen());
+      removeAllHighlights();
+      updateStatus();
     });
 
     document.querySelector('#undoBtn').addEventListener('click', () => {
-      game.undo();
-      game.undo();
+      if (blackPlayerType === 'manual' && whitePlayerType === 'manual') {
+        // only undo once if both players are manual
+        game.undo();
+      } else {
+        // otherwise, undo twice
+        game.undo();
+        game.undo();
+      }
 
       board.position(game.fen());
+      removeAllHighlights();
+      updateStatus();
+    });
+
+    document.querySelector('#flipBoardBtn').addEventListener('click', () => {
+      board.flip();
+    });
+
+    document.querySelector('#aiBtn').addEventListener('click', () => {
+      console.log('Beginning AI heads up battle!');
+      while (!game.in_checkmate() && !game.in_draw()) {
+        updateStatus();
+        window.setTimeout(requestAiMove, 500);
+      }
     });
 
     // UPDATE STATUS TAGS 

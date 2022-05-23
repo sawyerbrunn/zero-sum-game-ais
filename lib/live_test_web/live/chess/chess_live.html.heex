@@ -1,4 +1,4 @@
-<div class="pl-10">
+<div>
   <link rel="stylesheet"
         href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css"
         integrity="sha384-q94+BZtLrkL1/ohfjR8c6L+A6qzNH9R2hBLwyoAfu3i/WCvQjzL2RQJ3uNHDISdU"
@@ -12,7 +12,6 @@
         integrity="sha384-8Vi8VHwn3vjQ9eUHUxex3JSN/NFqUg3QbPyX8kWyb93+8AC/pPWTzj+nHtbC5bxD"
         crossorigin="anonymous"></script>
 
-
   <%= if @modal == "chess-modal" do
     live_component(LiveTest.ChessModalComponent, status: @game_over_status)  
    end %>
@@ -24,32 +23,54 @@
       </div>
     </div>
 
-    <div class="col-start-1 col-span-1 border border-gray-200 rounded-md">
-      <h2> Some Buttons </h2>
-      <div class="py-2">
-        <button id="setStartBtn" class="text-indigo-500">Start Position</button>
+    <div class="col-start-1 col-span-1 border border-gray-200 rounded-md bg-zinc-100">
+      <div class="text-center font-semibold text-xl">
+        <h2> Game Settings </h2>
       </div>
-      <div class="py-2">
-        <button id="undoBtn" class="text-indigo-500">Undo Last Move</button>
+      <div>
+        <label>White Player Type</label>
+        <%= form_for :white_player_settings, "#", [phx_change: "white-player-settings-updated"], fn f -> %>
+          <%= select f, :player_type, [{"Manual", :manual}, {"Random AI", :ai_random}, {"Minimax AI", :ai_minimax}], selected: @white_player.type %>
+          <%= if @white_player.type == :ai_minimax do %>
+            <label> Search depth </label>
+            <%= select f, :depth, [1, 2, 3, 4, 5], selected: @white_player.depth %>
+          <% end %>
+        <% end %>
       </div>
-      <div class="py-2">
-        <button id="set-fen" phx-click="set-fen" class="text-indigo-500">Set Fen</button>
+      <div>
+        <label>Black Player Type</label>
+        <%= form_for :black_player_settings, "#", [phx_change: "black-player-settings-updated"], fn f -> %>
+          <div>
+            <%= select f, :player_type, [{"Manual", :manual}, {"Random AI", :ai_random}, {"Minimax AI", :ai_minimax}], selected: @black_player.type %>
+          </div>
+          <%= if @black_player.type == :ai_minimax do %>
+            <div>
+              <label> Search depth</label>
+              <%= select f, :depth, [1, 2, 3, 4, 5], selected: @black_player.depth %>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+      <div class="px-2 py-2">
+        <button id="aiBtn" class={"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded w-full" <> if @white_player.type != :manual and @black_player.type != :manual, do: "", else: " hidden"}>
+          Begin AI vs AI
+        </button>
       </div>
     </div>
 
     <div class="col-start-2 col-span-4">
       <div class="flex justify-center">
-        <div phx-update="ignore">
-          <div id="myBoard" phx-hook="myBoard" style="width: 600px; height: 600px" ></div>
+        <div phx-update="ignore" class="w-full">
+          <div id="myBoard" phx-hook="myBoard" style="width: 100%; height: 100%" ></div>
         </div>
       </div>
     </div>
 
-    <div class="col-start-6 col-span-2">
-      <div class="flex justify-left">
+    <div class="col-start-6 col-span-2 h-80">
+      <div class="flex justify-left hidden">
         <div>
           <label>Status:</label>
-          <div id="status" phx-update="ignore">
+          <div id="statuss" phx-update="ignore">
           </div>
           <label>FEN:</label>
           <div id="fen" phx-update="ignore" class="text-ellipsis">
@@ -62,6 +83,37 @@
             <.game_history_component history={@history} />
           </div>
           
+        </div>
+      </div>
+      <div class="px-5">
+        <div class="flex justify-left">
+          <label> Status: </label>
+          <div id="status" phx-update="ignore">
+          </div>
+          
+        </div>
+        <.game_history_component history={@history} />
+      </div>
+      <div class="px-5 py-5 text-left">
+        <div class="py-2">
+          <button id="setStartBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded w-full">
+            New Game
+          </button>
+        </div>
+        <div class="py-2">
+          <button id="undoBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded w-full">
+            Undo Move
+          </button>
+        </div>
+        <div class="py-2">
+          <button id="flipBoardBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded w-full">
+            Flip Board
+          </button>
+        </div>
+        <div class="py-2">
+          <button id="set-fen" phx-click="set-fen" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded w-full">
+            Set Game FEN
+          </button>
         </div>
       </div>
     </div>

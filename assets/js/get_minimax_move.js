@@ -87,6 +87,9 @@ function getMinimaxMove (game, depth) {
     // game.move(move);
     // board.setPosition(game.fen());
 
+    console.log('Minimax move:');
+    console.log(move);
+
     return move;
 }
 
