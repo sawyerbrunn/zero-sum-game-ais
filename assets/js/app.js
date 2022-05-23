@@ -44,11 +44,11 @@ hooks.myBoard = {
     var board = null;
     var $board = $('#myBoard');
     var game = new Chess();
-    var squareToHighlight = null;
     var squareClass = 'square-55d63';
     var $status = $('#status');
     var $fen = $('#fen');
     var $pgn = $('#pgn');
+    var playingAiBattle = false;
 
     // Initialize player types (can be changed by user)
     window.whitePlayerType = 'manual';
@@ -212,9 +212,6 @@ hooks.myBoard = {
 
     function requestAiMove() {
       let currentTurn = game.turn();
-      // var move = getMinimaxMove(game, 3);
-      // game.move(move);
-
       if (currentTurn === 'w') {
         // highlight white AI's move
         let move = getWhiteAiMove(game);
@@ -226,6 +223,7 @@ hooks.myBoard = {
         game.move(move);
         highlightBlackMove(move.from, move.to);
       }
+      board.position(game.fen());
     }
 
     function getWhiteAiMove(game) {
@@ -273,6 +271,12 @@ hooks.myBoard = {
       window.whitePlayerDepth = e.depth;
     });
 
+    this.handleEvent('toggle-ai-battle', (_e) => {
+      playingAiBattle = !playingAiBattle;
+      console.log('Beginning AI heads up battle!');
+      window.setTimeout(doAiBattle, 500);
+    });
+
     this.handleEvent('receive-move', (e) => {
       // console.log('Received move from server:');
       // console.log(e);
@@ -299,6 +303,7 @@ hooks.myBoard = {
     // HTML Helpers
     // BUTTONS
     document.querySelector('#setStartBtn').addEventListener('click', () => {
+      playingAiBattle = false;
       game.reset();
 
       board.position(game.fen());
@@ -307,6 +312,7 @@ hooks.myBoard = {
     });
 
     document.querySelector('#undoBtn').addEventListener('click', () => {
+      playingAiBattle = false;
       if (blackPlayerType === 'manual' && whitePlayerType === 'manual') {
         // only undo once if both players are manual
         game.undo();
@@ -325,13 +331,26 @@ hooks.myBoard = {
       board.flip();
     });
 
-    document.querySelector('#aiBtn').addEventListener('click', () => {
-      console.log('Beginning AI heads up battle!');
-      while (!game.in_checkmate() && !game.in_draw()) {
-        updateStatus();
-        window.setTimeout(requestAiMove, 500);
+    // document.querySelector('#aiBtn').addEventListener('click', () => {
+    //   playingAiBattle = !playingAiBattle;
+    //   console.log('Beginning AI heads up battle!');
+    //   window.setTimeout(doAiBattle, 500);
+    // });
+
+    function doAiBattle() {
+      if (game.game_over()) {
+        console.log('Finished AI Battle!')
+        return;
       }
-    });
+      if (!playingAiBattle) {
+        // Cancel AI battle if user clicked a button
+        return;
+      }
+      requestAiMove();
+      board.position(game.fen());
+      updateStatus();
+      window.setTimeout(doAiBattle, 500);
+    }
 
     // UPDATE STATUS TAGS 
     function updateStatus () {

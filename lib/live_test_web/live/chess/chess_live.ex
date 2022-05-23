@@ -6,7 +6,7 @@ defmodule LiveTestWeb.ChessLive do
   alias LiveTest.Chess.Player
   # alias LiveTest.Chess.AIWebApi
 
-  @defaults [modal: nil, winner: nil, game_over_reason: nil, history: []]
+  @defaults [modal: nil, winner: nil, game_over_reason: nil, history: [], playing_ai_battle: false]
 
   @impl true
   def mount(_params, _session, socket) do
@@ -91,7 +91,18 @@ defmodule LiveTestWeb.ChessLive do
       |> assign(black_player: new_black_player)
       |> push_event("update-black-player-settings", %{type: type, depth: depth})
     }
+  end
 
+  def handle_event("toggle-ai-battle", _, socket) do
+    {:noreply,
+      socket
+      |> assign(playing_ai_battle: !socket.assigns.playing_ai_battle)
+      |> push_event("toggle-ai-battle", %{})
+    }
+  end
+
+  def handle_event("pause-ai-game", _, socket) do
+    {:noreply, assign(socket, playing_ai_battle: false)}
   end
 
   def handle_event(message, params, socket) do
@@ -138,10 +149,10 @@ defmodule LiveTestWeb.ChessLive do
               <%= "#{i + 1}." %>
             </div>
             <div class="text-xl px-2 col-start-2 col-span-1">
-              <%= black_move %>
+              <%= white_move %>
             </div>
             <div class="text-xl px-2 col-start-3 col-span-1">
-              <%= white_move %>
+              <%= black_move %>
             </div>
           </div>
         <% end %>
