@@ -75,6 +75,14 @@ function minimax(game, depth, alpha, beta, isMaximizingPlayer, sum, color) {
     }
 }
 
+function other(color) {
+    if (color === 'w') {
+        return 'b'
+    } else {
+        return 'w'
+    }
+}
+
 // AI Functions
 function getMinimaxMove (game, depth, prevSum) {
     
@@ -98,9 +106,6 @@ function getMinimaxMove (game, depth, prevSum) {
 
     // game.move(move);
     // board.setPosition(game.fen());
-
-    console.log('Minimax move:');
-    console.log(move);
 
     return move;
 }

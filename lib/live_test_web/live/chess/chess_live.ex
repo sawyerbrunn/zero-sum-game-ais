@@ -56,13 +56,13 @@ defmodule LiveTestWeb.ChessLive do
 
   def handle_event("set-fen", _, socket) do
     # fen = "r4Q2/pbpk3p/1p5P/n2P4/4Q3/8/PPP1P3/RNB1KBNR w KQ - 1 19"
-    fen2 = "rnb1k2r/pppp1ppp/5n2/2b5/7q/2P5/P5PN/1q1B1K1R w kq - 0 14"
-    {:noreply, push_event(socket, "set-fen", %{fen: fen2})}
+    # fen2 = "rnb1k2r/pppp1ppp/5n2/2b5/7q/2P5/P5PN/1q1B1K1R w kq - 0 14"
+    fen3 = "6k1/1p6/p7/8/5b1K/3b1q2/3rrn2/4q1q1 b - - 11 91"
+    {:noreply, push_event(socket, "set-fen", %{fen: fen3})}
   end
 
   def handle_event("request-move", %{"fen" => game_fen, "turn" => turn} = _params, socket) do
     move = AILevelZero.find_move(game_fen, turn)
-    :timer.sleep(250)
     # move = AIWebApi.find_move(game_fen, turn)
     {:noreply,
       socket

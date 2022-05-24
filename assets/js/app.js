@@ -315,7 +315,7 @@ hooks.myBoard = {
     document.querySelector('#setStartBtn').addEventListener('click', () => {
       playingAiBattle = false;
       game.reset();
-
+      window.globalSum = 0; // TODO: Update correctly
       board.position(game.fen());
       removeAllHighlights();
       updateStatus();
@@ -332,6 +332,7 @@ hooks.myBoard = {
         game.undo();
       }
 
+      // TODO: Update global sum
       board.position(game.fen());
       removeAllHighlights();
       updateStatus();
