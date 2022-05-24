@@ -39,7 +39,6 @@ defmodule LiveTestWeb.ChessLive do
   end
 
   def handle_event("update-history", %{"history" => history}, socket) do
-    IO.inspect("updated history: #{history}")
     {:noreply,
       socket
       |> assign(history: history)

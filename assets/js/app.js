@@ -134,10 +134,14 @@ hooks.myBoard = {
         window.globalSum = evaluateBoard(game, move, window.globalSum, 'b'); // IDK why this is 'b'
       }
       if (game.turn() === 'b' && window.blackPlayerType != 'manual') {
-        requestMoveFromServer(game.fen(), game.turn());
+        window.setTimeout(function() {
+          requestMoveFromServer(game.fen(), game.turn());
+        }, 250);
       } else if (game.turn() === 'w' && window.whitePlayerType != 'manual') {
-        requestMoveFromServer(game.fen(), game.turn());
-      }
+        window.setTimeout(function() {
+          requestMoveFromServer(game.fen(), game.turn());
+        }, 250);
+    }
 
       if (currentTurn === 'w') {
         highlightWhiteMove(source, target);
@@ -300,7 +304,7 @@ hooks.myBoard = {
       // });
 
       // TEMP FIX FOR NOW
-      requestAiMove();
+      window.setTimeout(requestAiMove, 250);
 
       board.position(game.fen());
       updateStatus();
