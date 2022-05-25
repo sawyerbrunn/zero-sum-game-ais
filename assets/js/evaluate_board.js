@@ -91,16 +91,16 @@ var pst_b = {
 var pstOpponent = {'w': pst_b, 'b': pst_w};
 var pstSelf = {'w': pst_w, 'b': pst_b};
 
-function evaluateBoard(game, move, score, color) {
+function evaluateBoard(game, move, score) {
     // Move if the current move being considered.
 
     if (game.in_checkmate()) {
   
-      // Opponent is in checkmate (good for us)
-      if (move.color === color) {
+      // White wins!
+      if (move.color === 'w') {
         return Number.POSITIVE_INFINITY;
       }
-      // Our king's in checkmate (bad for us)
+      // Black wins!
       else {
         return Number.NEGATIVE_INFINITY;
       }
@@ -112,11 +112,11 @@ function evaluateBoard(game, move, score, color) {
     }
   
     if (game.in_check()) {
-      // Opponent is in check (good for us)
-      if (move.color === color) {
+      // White is in check!
+      if (move.color === 'w') {
         score += 50;
       }
-      // Our king's in check (bad for us)
+      // Black is in check!
       else {
         score -= 50;
       }
@@ -143,13 +143,13 @@ function evaluateBoard(game, move, score, color) {
     }
   
     if ('captured' in move) {
-      // Opponent piece was captured (good for us)
-      if (move.color === color) {
+      // black's piece was captured
+      if (move.color === 'w') {
         score +=
           weights[move.captured] +
           pstOpponent[move.color][move.captured][to[0]][to[1]];
       }
-      // Our piece was captured (bad for us)
+      // black's piece was captured
       else {
         score -=
           weights[move.captured] +
@@ -161,15 +161,15 @@ function evaluateBoard(game, move, score, color) {
       // NOTE: promote to queen for simplicity
       move.promotion = 'q';
   
-      // Our piece was promoted (good for us)
-      if (move.color === color) {
+      // white piece was promosed
+      if (move.color === 'w') {
         score -=
           weights[move.piece] + pstSelf[move.color][move.piece][from[0]][from[1]];
         score +=
           weights[move.promotion] +
           pstSelf[move.color][move.promotion][to[0]][to[1]];
       }
-      // Opponent piece was promoted (bad for us)
+      // black piece was promoted
       else {
         score +=
           weights[move.piece] + pstSelf[move.color][move.piece][from[0]][from[1]];
@@ -179,7 +179,7 @@ function evaluateBoard(game, move, score, color) {
       }
     } else {
       // The moved piece still exists on the updated board, so we only need to update the position value
-      if (move.color !== color) {
+      if (move.color === 'b') {
         score += pstSelf[move.color][move.piece][from[0]][from[1]];
         score -= pstSelf[move.color][move.piece][to[0]][to[1]];
       } else {

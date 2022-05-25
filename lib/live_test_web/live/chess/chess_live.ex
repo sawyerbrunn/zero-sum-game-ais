@@ -60,8 +60,11 @@ defmodule LiveTestWeb.ChessLive do
     # fen3 = "6k1/1p6/p7/8/5b1K/3b1q2/3rrn2/4q1q1 b - - 11 91"
 
     # this fen causes an AI crash issue:
-    fen4 = "3Q1Q2/8/4k3/p7/P7/1P1P4/8/1K6 b - - 0 60"
-    {:noreply, push_event(socket, "set-fen", %{fen: fen4})}
+    # fen4 = "3Q1Q2/8/4k3/p7/P7/1P1P4/8/1K6 b - - 0 60"
+
+    # This fen is causing null moves returned from minimax:
+    fen5 = "4Q1Q1/3R4/8/8/4k3/8/7P/6K1 b - - 1 56"
+    {:noreply, push_event(socket, "set-fen", %{fen: fen5})}
   end
 
   def handle_event("request-move", %{"fen" => game_fen, "turn" => turn} = _params, socket) do

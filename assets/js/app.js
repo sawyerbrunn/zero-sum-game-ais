@@ -131,7 +131,7 @@ hooks.myBoard = {
       if (move === null) {
         return 'snapback'
       } else {
-        window.globalSum = evaluateBoard(game, move, window.globalSum, 'b'); // IDK why this is 'b'
+        window.globalSum = evaluateBoard(game, move, window.globalSum); // IDK why this is 'b'
       }
       if (game.turn() === 'b' && window.blackPlayerType != 'manual') {
         window.setTimeout(function() {
@@ -226,13 +226,16 @@ hooks.myBoard = {
         // highlight white AI's move
         let move = getWhiteAiMove(game);
         game.move(move);
-        window.globalSum = evaluateBoard(game, move, window.globalSum, 'b');
+        window.globalSum = evaluateBoard(game, move, window.globalSum);
         highlightWhiteMove(move.from, move.to);
       } else {
         // highlight black AI's move
         let move = getBlackAiMove(game);
-        game.move(move);
-        window.globalSum = evaluateBoard(game, move, window.globalSum, 'b');
+        let attempt = game.move(move);
+        if (attempt == null) {
+          alert('AI function returned illegal move!')
+        }
+        window.globalSum = evaluateBoard(game, move, window.globalSum);
         highlightBlackMove(move.from, move.to);
       }
       board.position(game.fen());
