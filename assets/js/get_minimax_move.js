@@ -3,7 +3,7 @@ import {evaluateBoard} from "./evaluate_board.js"
 function minimax(game, depth, alpha, beta, isMaximizingPlayer, sum, color) {
     // positionCount++; 
     // console.log('performing minimax!')
-    var children = game.moves();
+    var children = game.ugly_moves();
     
     // Sort moves randomly, so the same move isn't always picked on ties
     if (game.history().length < 4) {
@@ -26,7 +26,7 @@ function minimax(game, depth, alpha, beta, isMaximizingPlayer, sum, color) {
         currMove = children[i];
 
         // Note: in our case, the 'children' are simply modified game states
-        var currPrettyMove = game.move(currMove);
+        var currPrettyMove = game.ugly_move(currMove);
         var newSum = evaluateBoard(game, currPrettyMove, sum, color);
         var [childBestMove, childValue] = minimax(game, depth - 1, alpha, beta, !isMaximizingPlayer, newSum, color);
         
@@ -98,14 +98,8 @@ function getMinimaxMove (game, depth, prevSum) {
 
     var result = minimax(game, depth, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, true, startSum, game.turn());
 
-    // console.log('minimax result')
-    // console.log(result);
-
     move = result[0];
     score = result[1];
-
-    // game.move(move);
-    // board.setPosition(game.fen());
 
     return move;
 }

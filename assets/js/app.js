@@ -25,7 +25,7 @@ import "phoenix_html"
 import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
-import { Chess } from "chess.js"
+import { Chess } from "./chess.js"
 require('@chrisoakman/chessboardjs/dist/chessboard-1.0.0.min.js')
 
 // AI Helpers
