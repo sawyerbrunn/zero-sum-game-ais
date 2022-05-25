@@ -1,14 +1,7 @@
 import {evaluateBoard} from "./evaluate_board.js"
 
 function minimax(game, depth, alpha, beta, isMaximizingPlayer, sum, color) {
-    // positionCount++; 
-    // console.log('performing minimax!')
     var children = game.ugly_moves();
-    
-    // Sort moves randomly, so the same move isn't always picked on ties
-    if (game.history().length < 4) {
-        children.sort(function(a, b){return 0.5 - Math.random()});
-    }
     
     var currMove;
     // Maximum depth exceeded or node is a terminal node (no children)
@@ -75,33 +68,16 @@ function minimax(game, depth, alpha, beta, isMaximizingPlayer, sum, color) {
     }
 }
 
-function other(color) {
-    if (color === 'w') {
-        return 'b'
-    } else {
-        return 'w'
-    }
-}
-
-// AI Functions
+// API for gettining minimax move
 function getMinimaxMove (game, depth, prevSum) {
-    
-    var move;
-    var score;
-
     var startSum;
+
     if (game.turn() === 'w') {
         startSum = -prevSum
     } else {
         startSum = prevSum
     }
-
-    var result = minimax(game, depth, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, true, startSum, game.turn());
-
-    move = result[0];
-    score = result[1];
-
-    return move;
+    return minimax(game, depth, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, true, startSum, game.turn())[0]
 }
 
 export { getMinimaxMove }

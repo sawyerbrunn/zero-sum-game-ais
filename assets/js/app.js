@@ -245,7 +245,7 @@ hooks.myBoard = {
       } else if (whitePlayerType === 'ai_random') {
         return getRandomMove(game);
       } else if (whitePlayerType === 'ai_minimax') {
-        return getMinimaxMove(game, whitePlayerDepth, window.globalSum);
+        return getMinimaxMove(game, whitePlayerDepth, window.globalSum)[0];
       }
     }
 
