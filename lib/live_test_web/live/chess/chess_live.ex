@@ -54,10 +54,14 @@ defmodule LiveTestWeb.ChessLive do
   end
 
   def handle_event("set-fen", _, socket) do
+    # some checkmate test fens
     # fen = "r4Q2/pbpk3p/1p5P/n2P4/4Q3/8/PPP1P3/RNB1KBNR w KQ - 1 19"
     # fen2 = "rnb1k2r/pppp1ppp/5n2/2b5/7q/2P5/P5PN/1q1B1K1R w kq - 0 14"
-    fen3 = "6k1/1p6/p7/8/5b1K/3b1q2/3rrn2/4q1q1 b - - 11 91"
-    {:noreply, push_event(socket, "set-fen", %{fen: fen3})}
+    # fen3 = "6k1/1p6/p7/8/5b1K/3b1q2/3rrn2/4q1q1 b - - 11 91"
+
+    # this fen causes an AI crash issue:
+    fen4 = "3Q1Q2/8/4k3/p7/P7/1P1P4/8/1K6 b - - 0 60"
+    {:noreply, push_event(socket, "set-fen", %{fen: fen4})}
   end
 
   def handle_event("request-move", %{"fen" => game_fen, "turn" => turn} = _params, socket) do

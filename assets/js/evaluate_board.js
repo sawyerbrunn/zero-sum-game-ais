@@ -91,7 +91,7 @@ var pst_b = {
 var pstOpponent = {'w': pst_b, 'b': pst_w};
 var pstSelf = {'w': pst_w, 'b': pst_b};
 
-function evaluateBoard(game, move, prevSum, color) {
+function evaluateBoard(game, move, score, color) {
     // Move if the current move being considered.
 
     if (game.in_checkmate()) {
@@ -114,11 +114,11 @@ function evaluateBoard(game, move, prevSum, color) {
     if (game.in_check()) {
       // Opponent is in check (good for us)
       if (move.color === color) {
-        prevSum += 50;
+        score += 50;
       }
       // Our king's in check (bad for us)
       else {
-        prevSum -= 50;
+        score -= 50;
       }
     }
   
@@ -132,7 +132,7 @@ function evaluateBoard(game, move, prevSum, color) {
     ];
   
     // Change endgame behavior for kings
-    if (prevSum < -1500) {
+    if (score < -1500) {
       if (move.piece === 'k') {
         move.piece = 'k_e';
       }
@@ -145,13 +145,13 @@ function evaluateBoard(game, move, prevSum, color) {
     if ('captured' in move) {
       // Opponent piece was captured (good for us)
       if (move.color === color) {
-        prevSum +=
+        score +=
           weights[move.captured] +
           pstOpponent[move.color][move.captured][to[0]][to[1]];
       }
       // Our piece was captured (bad for us)
       else {
-        prevSum -=
+        score -=
           weights[move.captured] +
           pstSelf[move.color][move.captured][to[0]][to[1]];
       }
@@ -163,32 +163,32 @@ function evaluateBoard(game, move, prevSum, color) {
   
       // Our piece was promoted (good for us)
       if (move.color === color) {
-        prevSum -=
+        score -=
           weights[move.piece] + pstSelf[move.color][move.piece][from[0]][from[1]];
-        prevSum +=
+        score +=
           weights[move.promotion] +
           pstSelf[move.color][move.promotion][to[0]][to[1]];
       }
       // Opponent piece was promoted (bad for us)
       else {
-        prevSum +=
+        score +=
           weights[move.piece] + pstSelf[move.color][move.piece][from[0]][from[1]];
-        prevSum -=
+        score -=
           weights[move.promotion] +
           pstSelf[move.color][move.promotion][to[0]][to[1]];
       }
     } else {
       // The moved piece still exists on the updated board, so we only need to update the position value
       if (move.color !== color) {
-        prevSum += pstSelf[move.color][move.piece][from[0]][from[1]];
-        prevSum -= pstSelf[move.color][move.piece][to[0]][to[1]];
+        score += pstSelf[move.color][move.piece][from[0]][from[1]];
+        score -= pstSelf[move.color][move.piece][to[0]][to[1]];
       } else {
-        prevSum -= pstSelf[move.color][move.piece][from[0]][from[1]];
-        prevSum += pstSelf[move.color][move.piece][to[0]][to[1]];
+        score -= pstSelf[move.color][move.piece][from[0]][from[1]];
+        score += pstSelf[move.color][move.piece][to[0]][to[1]];
       }
     }
   
-    return prevSum;
+    return score;
   }
 
 export { evaluateBoard };
