@@ -1,3 +1,5 @@
+import { Chess } from "./chess.js"
+
 /* 
  * Piece Square Tables, adapted from Sunfish.py:
  * https://github.com/thomasahle/sunfish/blob/master/sunfish.py
@@ -91,7 +93,7 @@ var pst_b = {
 // var pstOpponent = {'w': pst_b, 'b': pst_w};
 // var pstSelf = {'w': pst_w, 'b': pst_b};
 
-function evaluateBoard(game, move, score) {
+function dynamicEvalGame(game, move, score) {
     // Move if the current move being considered.
 
     if (game.in_checkmate()) {
@@ -191,4 +193,38 @@ function evaluateBoard(game, move, score) {
     return score;
   }
 
-export { evaluateBoard };
+  function staticEvalGame(game) { 
+    var score = 0;
+    var fullSquare;
+    var board = game.board();
+    for (var i = 0; i < board.length; i++) {
+      var row = board[i];
+      for (fullSquare of row) {
+        if (fullSquare != null) {
+          var square = fullSquare.square
+          var item = game.get(square);
+          if (item != null) {
+            var piece = item.type;
+            var color = item.color;
+            var loc = 
+              [
+                8 - parseInt(square[1]),
+                square.charCodeAt(0) - 'a'.charCodeAt(0),
+              ]
+            if (color == 'w') {
+              score += 
+                weights[piece] 
+                + pst_w[piece][loc[0]][loc[1]]
+            } else {
+              score -=
+                weights[piece]
+                + pst_b[piece][loc[0]][loc[1]]
+            }
+          }
+        }
+      }
+    }
+    return score
+  }
+
+export { dynamicEvalGame, staticEvalGame };

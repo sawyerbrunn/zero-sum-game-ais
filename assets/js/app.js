@@ -31,7 +31,7 @@ require('@chrisoakman/chessboardjs/dist/chessboard-1.0.0.min.js')
 // AI Helpers
 import { getRandomMove } from "./get_random_move"
 import { getMinimaxMove } from "./get_minimax_move"
-import { evaluateBoard } from "./evaluate_board"
+import { dynamicEvalGame, staticEvalGame } from "./evaluate_board"
 
 
 let hooks = {}
@@ -47,10 +47,11 @@ hooks.myBoard = {
     var game = new Chess();
     var squareClass = 'square-55d63';
     var $status = $('#status');
+    var $globalScore = $('#globalScore')
     var $fen = $('#fen');
     var $pgn = $('#pgn');
     var playingAiBattle = false;
-    window.globalSum = 0;
+    window.globalScore = 0;
 
     // Initialize player types (can be changed by user)
     window.whitePlayerType = 'manual';
@@ -131,7 +132,7 @@ hooks.myBoard = {
       if (move === null) {
         return 'snapback'
       } else {
-        window.globalSum = evaluateBoard(game, move, window.globalSum); // IDK why this is 'b'
+        window.globalScore = dynamicEvalGame(game, move, window.globalScore);
       }
       if (game.turn() === 'b' && window.blackPlayerType != 'manual') {
         window.setTimeout(function() {
@@ -226,13 +227,13 @@ hooks.myBoard = {
         // highlight white AI's move
         let move = getWhiteAiMove(game);
         game.move(move);
-        window.globalSum = evaluateBoard(game, move, window.globalSum);
+        window.globalScore = dynamicEvalGame(game, move, window.globalScore);
         highlightWhiteMove(move.from, move.to);
       } else {
         // highlight black AI's move
         let move = getBlackAiMove(game);
         let attempt = game.move(move);
-        window.globalSum = evaluateBoard(game, move, window.globalSum);
+        window.globalScore = dynamicEvalGame(game, move, window.globalScore);
         highlightBlackMove(move.from, move.to);
       }
       board.position(game.fen());
@@ -245,7 +246,7 @@ hooks.myBoard = {
       } else if (whitePlayerType === 'ai_random') {
         return getRandomMove(game);
       } else if (whitePlayerType === 'ai_minimax') {
-        return getMinimaxMove(game, whitePlayerDepth, window.globalSum);
+        return getMinimaxMove(game, whitePlayerDepth, window.globalScore);
       }
     }
 
@@ -255,7 +256,7 @@ hooks.myBoard = {
       } else if (blackPlayerType === 'ai_random') {
         return getRandomMove(game);
       } else if (blackPlayerType === 'ai_minimax') {
-        return getMinimaxMove(game, blackPlayerDepth, window.globalSum);
+        return getMinimaxMove(game, blackPlayerDepth, window.globalScore);
       }
     }
 
@@ -270,7 +271,7 @@ hooks.myBoard = {
       console.log(e.fen)
       game.load(e.fen)
       board.position(game.fen());
-      window.globalSum = 0; // TODO: Update correctly
+      window.globalScore = staticEvalGame(game);
       removeAllHighlights();
       updateStatus();
     });
@@ -319,7 +320,7 @@ hooks.myBoard = {
     document.querySelector('#setStartBtn').addEventListener('click', () => {
       playingAiBattle = false;
       game.reset();
-      window.globalSum = 0; // TODO: Update correctly
+      window.globalScore = 0;
       board.position(game.fen());
       removeAllHighlights();
       updateStatus();
@@ -336,7 +337,9 @@ hooks.myBoard = {
         game.undo();
       }
 
-      // TODO: Update global sum
+      // Update global sum usingn a static eval function
+      window.globalScore = staticEvalGame(game);
+
       board.position(game.fen());
       removeAllHighlights();
       updateStatus();
@@ -397,8 +400,18 @@ hooks.myBoard = {
           status += ', ' + moveColor + ' is in check'
         }
       }
+
+      var globalScoreStr;
+      if (globalScore >= 500) {
+        globalScoreStr = window.globalScore + '. (White is winning!)'
+      } else if (window.globalScore <= -500) {
+        globalScoreStr = window.globalScore + '. (Black is winning!)'
+      } else {
+        globalScoreStr = window.globalScore + ''
+      }
     
       $status.html(status);
+      $globalScore.html(globalScoreStr)
       $fen.html(game.fen());
       $pgn.html(game.pgn());
       pushHistory(game.history());

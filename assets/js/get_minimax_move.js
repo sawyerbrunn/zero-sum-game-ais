@@ -1,4 +1,4 @@
-import {evaluateBoard} from "./evaluate_board.js"
+import {dynamicEvalGame} from "./evaluate_board.js"
 
 function minimax(game, depth, alpha, beta, isMaximizer, score) {
   // Depth at 0?
@@ -29,7 +29,7 @@ function minimax(game, depth, alpha, beta, isMaximizer, score) {
     // Note: each child is a move we are considering
     // Play ugly_move, then recurse on the resulting board
     var currMove = game.ugly_move(currUglyMove);
-    var newScore = evaluateBoard(game, currMove, score);
+    var newScore = dynamicEvalGame(game, currMove, score);
     var [_, childVal, childDepth] = minimax(game, depth - 1, alpha, beta, !isMaximizer, newScore);
     game.undo();
 
