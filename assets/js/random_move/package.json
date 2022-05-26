@@ -1,0 +1,8 @@
+{
+    "name": "random_move",
+    "type": "module",
+    "devDependencies": {
+        "chess.js": "^0.13.2"
+      }
+}
+  

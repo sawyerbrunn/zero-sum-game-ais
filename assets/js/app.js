@@ -25,190 +25,400 @@ import "phoenix_html"
 import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
-import { Chess } from 'chess.js'
+import { Chess } from "./chess.js"
+require('@chrisoakman/chessboardjs/dist/chessboard-1.0.0.min.js')
+
+// AI Helpers
+import { getRandomMove } from "./get_random_move"
+import { getMinimaxMove } from "./get_minimax_move"
+import { dynamicEvalGame, staticEvalGame } from "./evaluate_board"
+
 
 let hooks = {}
-hooks.chessBoard = {
+hooks.myBoard = {
   mounted() {
-    // CHESS CODE BELOW
-
-    // NOTE: this example uses the chess.js library:
-    // https://github.com/jhlywa/chess.js
-
-    const board = document.querySelector('chess-board');
-    const game = new Chess();
-
     var mount = this;
+    // CHESS CODE BELOW
+    // NOTE: The code below is an adaptation of the chessboard-js examples 5000-5005
+    // https://chessboardjs.com/examples#5000
 
+    var board = null;
+    var $board = $('#myBoard');
+    var game = new Chess();
+    var squareClass = 'square-55d63';
+    var $status = $('#status');
+    var $globalScore = $('#globalScore')
+    var $fen = $('#fen');
+    var $pgn = $('#pgn');
+    var playingAiBattle = false;
+    window.globalScore = 0;
 
-    // HIGHLIGHT LEGAL MOVES LOGIC
-    const highlightStyles = document.createElement('style');
-    document.head.append(highlightStyles);
+    // Initialize player types (can be changed by user)
+    window.whitePlayerType = 'manual';
+    window.whitePlayerDepth = null;
+    window.blackPlayerType = 'ai_minimax';
+    window.blackPlayerDepth = 3;
+
+    window.game = game;
+
     const whiteSquareGrey = '#a9a9a9';
     const blackSquareGrey = '#696969';
 
-    function removeGreySquares() {
-      highlightStyles.textContent = '';
+    function removeGreySquares () {
+      $('#myBoard .square-55d63').css('background', '')
     }
 
-    function greySquare(square) {
-      const highlightColor = (square.charCodeAt(0) % 2) ^ (square.charCodeAt(1) % 2)
-          ? whiteSquareGrey
-          : blackSquareGrey;
-      
-      highlightStyles.textContent += `
-        chess-board::part(${square}) {
-          background-color: ${highlightColor};
-        }
-      `;
-    }
+    function greySquare (square) {
+      var $square = $('#myBoard .square-' + square)
 
-    // PICK UP PIECES LOGIC
-    board.addEventListener('drag-start', (e) => {
-      const {source, piece} = e.detail;
-
-      // do not pick up pieces if the game is over
-      if (game.game_over()) {
-        e.preventDefault();
-        return;
+      var background = whiteSquareGrey
+      if ($square.hasClass('black-3c85d')) {
+        background = blackSquareGrey
       }
+
+      $square.css('background', background)
+    }
+
+    function highlightWhiteMove(from, to) {
+      // highlight white's move
+      removeHighlights('white')
+      $board.find('.square-' + from).addClass('highlight-white')
+      $board.find('.square-' + to).addClass('highlight-white')
+    };
+
+    function highlightBlackMove(from, to) {
+      // highlight white's move
+      removeHighlights('black')
+      $board.find('.square-' + from).addClass('highlight-black')
+      $board.find('.square-' + to).addClass('highlight-black')
+    };
+    // color is 'white' or 'black'
+    function removeHighlights (color) {
+      $board.find('.' + squareClass)
+        .removeClass('highlight-' + color)
+    }
+
+    // remove all highlighs from squares
+    function removeAllHighlights() {
+      removeHighlights('white');
+      removeHighlights('black');
+      squareToHighlight = null;
+    }
+
+    function onDragStart (source, piece) {
+      // do not pick up pieces if the game is over
+      if (game.game_over()) return false
 
       // or if it's not that side's turn
       if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
           (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
-        e.preventDefault();
-        return;
+        return false
       }
-    });
+    }
 
-    // DROP PIECES LOGIC
-    board.addEventListener('drop', (e) => {
-      const {source, target, setAction} = e.detail;
-
-      removeGreySquares();
+    // TODO: Allow dynamic piece promotion
+    function onDrop (source, target) {
+      let currentTurn = game.turn();
+      removeGreySquares()
 
       // see if the move is legal
-      const move = game.move({
+      var move = game.move({
         from: source,
         to: target,
         promotion: 'q' // NOTE: always promote to a queen for example simplicity
-      });
-
-      checkGameOver();
-
-      if (game.game_over()) {
-        return
-      }
+      })
 
       // illegal move
       if (move === null) {
-        setAction('snapback');
+        return 'snapback'
       } else {
-        // make random legal move for black
-        window.setTimeout(makeRandomMove, 250);
-        checkGameOver();
+        window.globalScore = dynamicEvalGame(game, move, window.globalScore);
       }
-    });
-
-    function checkGameOver() {
-      if (game.game_over()) {
-        const winner = other(game.turn());
-        const gameOverReason = getGameOverReason();
-        console.log('Game Over!');
-        console.log(winner);
-        console.log(gameOverReason);
-        // send message to the server
-        mount.pushEvent("game-over", {winner, gameOverReason})
-      }
+      if (game.turn() === 'b' && window.blackPlayerType != 'manual') {
+        window.setTimeout(function() {
+          requestMoveFromServer(game.fen(), game.turn());
+        }, 250);
+      } else if (game.turn() === 'w' && window.whitePlayerType != 'manual') {
+        window.setTimeout(function() {
+          requestMoveFromServer(game.fen(), game.turn());
+        }, 250);
     }
 
-    function other(color) {
-      if (color == 'b') {
-        return 'w'
-      } else {
-        return 'b'
+      if (currentTurn === 'w') {
+        highlightWhiteMove(source, target);
+      } else if (currentTurn === 'b') {
+        highlightBlackMove(source, target);
       }
+
+      updateStatus();
     }
 
-    function getGameOverReason() {
-      if (game.in_checkmate()) {
-        return 'checkmate';
-      } else if (game.in_draw()) {
-        return 'draw';
-      } else if (game.in_stalemate()) {
-        return 'stalemate';
-      } else if (game.in_threefold_repetition()) {
-        return 'threefold_repetition';
-      } else if (game.insufficient_material()) {
-        return 'insufficient_material';
-      }
-    }
-
-    board.addEventListener('mouseover-square', (e) => {
-      const {square, piece} = e.detail;
-
+    function onMouseoverSquare (square, piece) {
       // get list of possible moves for this square
-      const moves = game.moves({
+      var moves = game.moves({
         square: square,
         verbose: true
-      });
+      })
 
       // exit if there are no moves available for this square
-      if (moves.length === 0) {
-        return;
-      }
+      if (moves.length === 0) return
 
       // highlight the square they moused over
-      greySquare(square);
+      greySquare(square)
 
       // highlight the possible squares for this piece
-      for (const move of moves) {
-        greySquare(move.to);
+      for (var i = 0; i < moves.length; i++) {
+        greySquare(moves[i].to)
       }
-    });
-
-    board.addEventListener('mouseout-square', (e) => {
-      removeGreySquares();
-    });
-
-    board.addEventListener('snap-end', (e) => {
-      board.setPosition(game.fen())
-    });
-
-    // CUSTOM TO HTML
-
-    document.querySelector('#setStartBtn').addEventListener('click', () => {
-        game.reset();
-
-        board.setPosition(game.fen())
-      });
-
-      document.querySelector('#undoBtn').addEventListener('click', () => {
-        game.undo()
-        game.undo()
-
-        board.setPosition(game.fen());
-      });
-
-
-    // AI Functions
-    function makeRandomMove () {
-      let possibleMoves = game.moves();
-
-      // game over
-      if (possibleMoves.length === 0) {
-          return;
-      }
-
-      const randomIdx = Math.floor(Math.random() * possibleMoves.length);
-      game.move(possibleMoves[randomIdx]);
-      board.setPosition(game.fen());
     }
 
+    function onMouseoutSquare (square, piece) {
+      removeGreySquares()
+    }
+
+    function onSnapEnd () {
+      board.position(game.fen());
+    }
+
+    // // NOTE: This is hard-coded for black as an AI
+    // function onMoveEnd () {
+    //   $board.find('.square-' + squareToHighlight)
+    //     .addClass('highlight-black')
+    // }
+
+    var config = {
+      draggable: true,
+      position: 'start',
+      onDragStart: onDragStart,
+      onDrop: onDrop,
+      // onMoveEnd: onMoveEnd,
+      onMouseoutSquare: onMouseoutSquare,
+      onMouseoverSquare: onMouseoverSquare,
+      onSnapEnd: onSnapEnd
+    }
+    board = Chessboard('myBoard', config)
+    $(window).resize(board.resize);
+
+    // END CHESSBOARD.JS FUNCTIONS
+
+    window.board = board;
+    updateStatus();
+
+
+
+    // PUSH EVENTS TO SERVER
+
+    // Asks the server to send a legal move based on the game fen and the current turn.
+    function requestMoveFromServer(fen, turn) {
+      mount.pushEvent("request-move", {fen, turn});
+    }
+
+    function pushHistory(history) {
+      mount.pushEvent("update-history", {history});
+    };
+
+    // function announceGameOver(status) {
+    //   mount.pushEvent("game-over", {status});
+    // }
+
+    function requestAiMove() {
+      let currentTurn = game.turn();
+      if (currentTurn === 'w') {
+        // highlight white AI's move
+        let move = getWhiteAiMove(game);
+        game.move(move);
+        window.globalScore = dynamicEvalGame(game, move, window.globalScore);
+        highlightWhiteMove(move.from, move.to);
+      } else {
+        // highlight black AI's move
+        let move = getBlackAiMove(game);
+        let attempt = game.move(move);
+        window.globalScore = dynamicEvalGame(game, move, window.globalScore);
+        highlightBlackMove(move.from, move.to);
+      }
+      board.position(game.fen());
+    }
+
+    function getWhiteAiMove(game) {
+      if (whitePlayerType === 'manual') {
+        alert('white AI move called, but player type is manual!')
+        return
+      } else if (whitePlayerType === 'ai_random') {
+        return getRandomMove(game);
+      } else if (whitePlayerType === 'ai_minimax') {
+        return getMinimaxMove(game, whitePlayerDepth, window.globalScore);
+      }
+    }
+
+    function getBlackAiMove(game) {
+      if (blackPlayerType === 'manual') {
+        return
+      } else if (blackPlayerType === 'ai_random') {
+        return getRandomMove(game);
+      } else if (blackPlayerType === 'ai_minimax') {
+        return getMinimaxMove(game, blackPlayerDepth, window.globalScore);
+      }
+    }
+
+    // HANDLE EVENTS FROM SERVER
+    this.handleEvent('refresh-board', (e) => {
+      console.log('updating board!')
+      board.position(game.fen());
+    });
+
+    this.handleEvent('set-fen', (e) => {
+      console.log("Setting fen!")
+      console.log(e.fen)
+      game.load(e.fen)
+      board.position(game.fen());
+      window.globalScore = staticEvalGame(game);
+      removeAllHighlights();
+      updateStatus();
+    });
+
+    this.handleEvent('update-black-player-settings', (e) => {
+      window.blackPlayerType = e.type;
+      window.blackPlayerDepth = e.depth;
+    });
+
+    this.handleEvent('update-white-player-settings', (e) => {
+      window.whitePlayerType = e.type;
+      window.whitePlayerDepth = e.depth;
+    });
+
+    this.handleEvent('toggle-ai-battle', (_e) => {
+      playingAiBattle = !playingAiBattle;
+      console.log('Beginning AI heads up battle!');
+      window.setTimeout(doAiBattle, 500);
+    });
+
+    this.handleEvent('receive-move', (e) => {
+      // console.log('Received move from server:');
+      // console.log(e);
+
+
+      // TODO: implement server-side chess AI
+      // var move = game.move({
+      //   from: e.source,
+      //   to: e.target,
+      //   promotion: 'q' // NOTE: always promote to a queen for example simplicity
+      // });
+
+      // TEMP FIX FOR NOW
+      window.setTimeout(requestAiMove, 250);
+
+      board.position(game.fen());
+      updateStatus();
+
+
+      // Maybe request another move here
+    })
+
+
+    // HTML Helpers
+    // BUTTONS
+    document.querySelector('#setStartBtn').addEventListener('click', () => {
+      playingAiBattle = false;
+      game.reset();
+      window.globalScore = 0;
+      board.position(game.fen());
+      removeAllHighlights();
+      updateStatus();
+    });
+
+    document.querySelector('#undoBtn').addEventListener('click', () => {
+      playingAiBattle = false;
+      if (blackPlayerType === 'manual' && whitePlayerType === 'manual') {
+        // only undo once if both players are manual
+        game.undo();
+      } else {
+        // otherwise, undo twice
+        game.undo();
+        game.undo();
+      }
+
+      // Update global sum usingn a static eval function
+      window.globalScore = staticEvalGame(game);
+
+      board.position(game.fen());
+      removeAllHighlights();
+      updateStatus();
+    });
+
+    document.querySelector('#flipBoardBtn').addEventListener('click', () => {
+      board.flip();
+    });
+
+    // document.querySelector('#aiBtn').addEventListener('click', () => {
+    //   playingAiBattle = !playingAiBattle;
+    //   console.log('Beginning AI heads up battle!');
+    //   window.setTimeout(doAiBattle, 500);
+    // });
+
+    function doAiBattle() {
+      if (game.game_over()) {
+        console.log('Finished AI Battle!')
+        return;
+      }
+      if (!playingAiBattle) {
+        // Cancel AI battle if user clicked a button
+        return;
+      }
+      requestAiMove();
+      board.position(game.fen());
+      updateStatus();
+      window.setTimeout(doAiBattle, 500);
+    }
+
+    // UPDATE STATUS TAGS 
+    function updateStatus () {
+      var status = ''
+    
+      var moveColor = 'White'
+      if (game.turn() === 'b') {
+        moveColor = 'Black'
+      }
+    
+      // checkmate?
+      if (game.in_checkmate()) {
+        status = 'Game over, ' + moveColor + ' is in checkmate.'
+        // announceGameOver(status);
+      }
+    
+      // draw?
+      else if (game.in_draw()) {
+        status = 'Game over, drawn position'
+        // announceGameOver(status);
+      }
+    
+      // game still on
+      else {
+        status = moveColor + ' to move'
+    
+        // check?
+        if (game.in_check()) {
+          status += ', ' + moveColor + ' is in check'
+        }
+      }
+
+      var globalScoreStr;
+      if (globalScore >= 500) {
+        globalScoreStr = window.globalScore + '. (White is winning!)'
+      } else if (window.globalScore <= -500) {
+        globalScoreStr = window.globalScore + '. (Black is winning!)'
+      } else {
+        globalScoreStr = window.globalScore + ''
+      }
+    
+      $status.html(status);
+      $globalScore.html(globalScoreStr)
+      $fen.html(game.fen());
+      $pgn.html(game.pgn());
+      pushHistory(game.history());
+    }
 
   }
 }
-
 
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
@@ -227,173 +437,3 @@ liveSocket.connect()
 // >> liveSocket.enableLatencySim(1000)  // enabled for duration of browser session
 // >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket
-
-
-// // CHESS CODE BELOW
-
-// // NOTE: this example uses the chess.js library:
-// // https://github.com/jhlywa/chess.js
-
-// const board = document.querySelector('chess-board');
-// const game = new Chess();
-
-
-// // HIGHLIGHT LEGAL MOVES LOGIC
-// const highlightStyles = document.createElement('style');
-// document.head.append(highlightStyles);
-// const whiteSquareGrey = '#a9a9a9';
-// const blackSquareGrey = '#696969';
-
-// function removeGreySquares() {
-//   highlightStyles.textContent = '';
-// }
-
-// function greySquare(square) {
-//   const highlightColor = (square.charCodeAt(0) % 2) ^ (square.charCodeAt(1) % 2)
-//       ? whiteSquareGrey
-//       : blackSquareGrey;
-  
-//   highlightStyles.textContent += `
-//     chess-board::part(${square}) {
-//       background-color: ${highlightColor};
-//     }
-//   `;
-// }
-
-// // PICK UP PIECES LOGIC
-// board.addEventListener('drag-start', (e) => {
-//   const {source, piece} = e.detail;
-
-//   // do not pick up pieces if the game is over
-//   if (game.game_over()) {
-//     e.preventDefault();
-//     return;
-//   }
-
-//   // or if it's not that side's turn
-//   if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
-//       (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
-//     e.preventDefault();
-//     return;
-//   }
-// });
-
-// // DROP PIECES LOGIC
-// board.addEventListener('drop', (e) => {
-//   const {source, target, setAction} = e.detail;
-
-//   removeGreySquares();
-
-//   // see if the move is legal
-//   const move = game.move({
-//     from: source,
-//     to: target,
-//     promotion: 'q' // NOTE: always promote to a queen for example simplicity
-//   });
-
-//   checkGameOver();
-
-//   // illegal move
-//   if (move === null) {
-//     setAction('snapback');
-//   } else {
-//     // make random legal move for black
-//     window.setTimeout(makeRandomMove, 250);
-//     checkGameOver();
-//   }
-// });
-
-// function checkGameOver() {
-//   if (game.game_over()) {
-//     const winner = other(game.turn());
-//     const gameOverReason = getGameOverReason();
-//     console.log('Game Over!');
-//     console.log(winner);
-//     console.log(gameOverReason);
-//     // send message to the server
-//   }
-// }
-
-// function other(color) {
-//   if (color == 'b') {
-//     return 'w'
-//   } else {
-//     return 'b'
-//   }
-// }
-
-// function getGameOverReason() {
-//   if (game.in_checkmate()) {
-//     return 'checkmate';
-//   } else if (game.in_draw()) {
-//     return 'draw';
-//   } else if (game.in_stalemate()) {
-//     return 'stalemate';
-//   } else if (game.in_threefold_repetition()) {
-//     return 'threefold_repetition';
-//   } else if (game.insufficient_material()) {
-//     return 'insufficient_material';
-//   }
-// }
-
-// board.addEventListener('mouseover-square', (e) => {
-//   const {square, piece} = e.detail;
-
-//   // get list of possible moves for this square
-//   const moves = game.moves({
-//     square: square,
-//     verbose: true
-//   });
-
-//   // exit if there are no moves available for this square
-//   if (moves.length === 0) {
-//     return;
-//   }
-
-//   // highlight the square they moused over
-//   greySquare(square);
-
-//   // highlight the possible squares for this piece
-//   for (const move of moves) {
-//     greySquare(move.to);
-//   }
-// });
-
-// board.addEventListener('mouseout-square', (e) => {
-//   removeGreySquares();
-// });
-
-// board.addEventListener('snap-end', (e) => {
-//   board.setPosition(game.fen())
-// });
-
-// // CUSTOM TO HTML
-
-// document.querySelector('#setStartBtn').addEventListener('click', () => {
-//     game.reset();
-
-//     board.setPosition(game.fen())
-//   });
-
-//   document.querySelector('#undoBtn').addEventListener('click', () => {
-//     game.undo()
-//     game.undo()
-
-//     board.setPosition(game.fen());
-//   });
-
-
-// // AI Functions
-// function makeRandomMove () {
-//   let possibleMoves = game.moves();
-
-//   // game over
-//   if (possibleMoves.length === 0) {
-//       return;
-//   }
-
-//   const randomIdx = Math.floor(Math.random() * possibleMoves.length);
-//   game.move(possibleMoves[randomIdx]);
-//   board.setPosition(game.fen());
-// }
-

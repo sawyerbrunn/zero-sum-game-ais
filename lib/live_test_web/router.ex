@@ -20,6 +20,7 @@ defmodule LiveTestWeb.Router do
     get "/", PageController, :index
     live "/game", GameLive, :index
     live "/chess", ChessLive
+    get "/img/chesspieces/wikipedia/:file", ImageController, :get_image
   end
 
   # live "/game", GameLive, :index
