@@ -232,9 +232,6 @@ hooks.myBoard = {
         // highlight black AI's move
         let move = getBlackAiMove(game);
         let attempt = game.move(move);
-        if (attempt == null) {
-          alert('AI function returned illegal move!')
-        }
         window.globalSum = evaluateBoard(game, move, window.globalSum);
         highlightBlackMove(move.from, move.to);
       }

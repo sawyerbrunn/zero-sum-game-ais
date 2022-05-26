@@ -88,8 +88,8 @@ var pst_b = {
     'k_e': pst_w['k_e'].slice().reverse()
 }
 
-var pstOpponent = {'w': pst_b, 'b': pst_w};
-var pstSelf = {'w': pst_w, 'b': pst_b};
+// var pstOpponent = {'w': pst_b, 'b': pst_w};
+// var pstSelf = {'w': pst_w, 'b': pst_b};
 
 function evaluateBoard(game, move, score) {
     // Move if the current move being considered.
@@ -112,11 +112,11 @@ function evaluateBoard(game, move, score) {
     }
   
     if (game.in_check()) {
-      // White is in check!
+      // Black is in check!
       if (move.color === 'w') {
         score += 50;
       }
-      // Black is in check!
+      // White is in check!
       else {
         score -= 50;
       }
@@ -132,7 +132,7 @@ function evaluateBoard(game, move, score) {
     ];
   
     // Change endgame behavior for kings
-    if (score < -1500) {
+    if (score < -1500 || score > 1500) {
       if (move.piece === 'k') {
         move.piece = 'k_e';
       }
@@ -147,13 +147,13 @@ function evaluateBoard(game, move, score) {
       if (move.color === 'w') {
         score +=
           weights[move.captured] +
-          pstOpponent[move.color][move.captured][to[0]][to[1]];
+          pst_b[move.captured][to[0]][to[1]];
       }
       // black's piece was captured
       else {
         score -=
           weights[move.captured] +
-          pstSelf[move.color][move.captured][to[0]][to[1]];
+          pst_w[move.captured][to[0]][to[1]];
       }
     }
   
@@ -161,30 +161,30 @@ function evaluateBoard(game, move, score) {
       // NOTE: promote to queen for simplicity
       move.promotion = 'q';
   
-      // white piece was promosed
+      // white piece was promoted
       if (move.color === 'w') {
         score -=
-          weights[move.piece] + pstSelf[move.color][move.piece][from[0]][from[1]];
+          weights[move.piece] + pst_w[move.piece][from[0]][from[1]];
         score +=
           weights[move.promotion] +
-          pstSelf[move.color][move.promotion][to[0]][to[1]];
+          pst_w[move.promotion][to[0]][to[1]];
       }
       // black piece was promoted
       else {
         score +=
-          weights[move.piece] + pstSelf[move.color][move.piece][from[0]][from[1]];
+          weights[move.piece] + pst_b[move.piece][from[0]][from[1]];
         score -=
           weights[move.promotion] +
-          pstSelf[move.color][move.promotion][to[0]][to[1]];
+          pst_b[move.promotion][to[0]][to[1]];
       }
     } else {
       // The moved piece still exists on the updated board, so we only need to update the position value
-      if (move.color === 'b') {
-        score += pstSelf[move.color][move.piece][from[0]][from[1]];
-        score -= pstSelf[move.color][move.piece][to[0]][to[1]];
+      if (move.color === 'w') {
+        score -= pst_w[move.piece][from[0]][from[1]];
+        score += pst_w[move.piece][to[0]][to[1]];
       } else {
-        score -= pstSelf[move.color][move.piece][from[0]][from[1]];
-        score += pstSelf[move.color][move.piece][to[0]][to[1]];
+        score += pst_b[move.piece][from[0]][from[1]];
+        score -= pst_b[move.piece][to[0]][to[1]];
       }
     }
   

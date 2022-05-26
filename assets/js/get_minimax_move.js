@@ -3,7 +3,11 @@ import {evaluateBoard} from "./evaluate_board.js"
 function minimax(game, depth, alpha, beta, isMaximizer, score) {
   // Depth at 0?
   if (depth === 0) return [null, score, 0];
-  var children = game.ugly_moves({ verbose: true});
+  var children = game.ugly_moves();
+
+  children.sort(function (a, b) {
+    return 0.5 - Math.random();
+  });
   // No legal moves to consider?
   if (children.length === 0) {
     // No legal moves to consider...
@@ -38,7 +42,7 @@ function minimax(game, depth, alpha, beta, isMaximizer, score) {
       bestMove = currMove;
       maxVal = childVal;
       alpha = Math.max(childVal, alpha)
-    } else if (isMaximizer && childVal === maxVal && childDepth > bestDepth) {
+    } else if (isMaximizer && childVal === maxVal && childDepth >= bestDepth) {
       bestDepth = childDepth
       bestMove = currMove;
       maxVal = childVal;
@@ -48,7 +52,7 @@ function minimax(game, depth, alpha, beta, isMaximizer, score) {
       bestMove = currMove;
       minVal = childVal;
       beta = Math.min(childVal, beta)
-    } else if (!isMaximizer && childVal < minVal && childDepth > bestDepth) {
+    } else if (!isMaximizer && childVal === minVal && childDepth >= bestDepth) {
       bestDepth = childDepth;
       bestMove = currMove;
       minVal = childVal;
@@ -72,6 +76,7 @@ function shouldPrune(alpha, beta) {
 function getMinimaxMove (game, depth, score) {
   var turn = game.turn();
   let res = minimax(game, depth, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, turn === 'w', score)
+  console.log(res);
   return res[0];
 }
 
