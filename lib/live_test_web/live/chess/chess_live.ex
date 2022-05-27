@@ -68,7 +68,8 @@ defmodule LiveTestWeb.ChessLive do
     # fen = "2r5/pk6/3Qp3/2Bp4/3P2P1/P3P2P/4KP2/6q1 w - - 3 32"
     # fen = "1Q2R3/p1k2ppp/2p3b1/2n1p1P1/3qP3/2NP1P2/P6P/2B1K2R b K - 4 25" # global score 1122
     # fen = "8/1R4k1/7p/8/3PK1P1/P6P/1P6/8 b - - 2 61"
-    fen = "2k3rr/p1pp4/1p4qp/n3p3/2b1Pp1P/5B2/PP6/R1B1RK2 w - - 0 28"
+    # fen = "2k3rr/p1pp4/1p4qp/n3p3/2b1Pp1P/5B2/PP6/R1B1RK2 w - - 0 28"
+    fen = "3rkb1r/ppR3pp/4P3/8/N4Q2/PP1p2B1/6PP/3K1Bq1 b k - 0 24"
     {:noreply, push_event(socket, "set-fen", %{fen: fen})}
   end
 

@@ -1383,6 +1383,10 @@ export const Chess = function (fen) {
         return ugly_moves;
       },
 
+    make_pretty: function(uglyMove) {
+      return make_pretty(uglyMove);
+    },
+
     in_check: function () {
       return in_check()
     },

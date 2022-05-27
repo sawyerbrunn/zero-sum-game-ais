@@ -42,6 +42,9 @@ hooks.myBoard = {
     // NOTE: The code below is an adaptation of the chessboard-js examples 5000-5005
     // https://chessboardjs.com/examples#5000
 
+    var normal_move_audio = new Audio('./audio/normal_move.mp3');
+    var piece_capture_audio = new Audio('./audio/piece_capture.mp3');
+
     var board = null;
     var $board = $('#myBoard');
     var game = new Chess();
@@ -51,6 +54,7 @@ hooks.myBoard = {
     var $fen = $('#fen');
     var $pgn = $('#pgn');
     var playingAiBattle = false;
+    var whiteHighlightedMove, blackHighlightedMove;
     window.globalScore = 0;
 
     // Initialize player types (can be changed by user)
@@ -84,6 +88,7 @@ hooks.myBoard = {
       removeHighlights('white')
       $board.find('.square-' + from).addClass('highlight-white')
       $board.find('.square-' + to).addClass('highlight-white')
+      whiteHighlightedMove = [from, to]
     };
 
     function highlightBlackMove(from, to) {
@@ -91,18 +96,26 @@ hooks.myBoard = {
       removeHighlights('black')
       $board.find('.square-' + from).addClass('highlight-black')
       $board.find('.square-' + to).addClass('highlight-black')
+      blackHighlightedMove = [from, to]
     };
     // color is 'white' or 'black'
     function removeHighlights (color) {
       $board.find('.' + squareClass)
         .removeClass('highlight-' + color)
+
+      if (color == 'black') {
+        blackHighlightedMove = null;
+      } else if (color == 'white') {
+        whiteHighlightedMove = null;
+      }
     }
 
     // remove all highlighs from squares
     function removeAllHighlights() {
       removeHighlights('white');
       removeHighlights('black');
-      squareToHighlight = null;
+      whiteHighlightedMove = null;
+      blackHighlightedMove = null;
     }
 
     function onDragStart (source, piece) {
@@ -132,6 +145,7 @@ hooks.myBoard = {
       if (move === null) {
         return 'snapback'
       } else {
+        playAudio(move);
         window.globalScore = dynamicEvalGame(game, move, window.globalScore);
       }
       if (game.turn() === 'b' && window.blackPlayerType != 'manual') {
@@ -149,13 +163,12 @@ hooks.myBoard = {
       } else if (game.turn() === 'w') {
         removeHighlights('white');
       }
-      
+
       if (currentTurn === 'w') {
         highlightWhiteMove(source, target);
       } else if (currentTurn === 'b') {
         highlightBlackMove(source, target);
       }
-
       updateStatus();
     }
 
@@ -185,12 +198,6 @@ hooks.myBoard = {
     function onSnapEnd () {
       board.position(game.fen());
     }
-
-    // // NOTE: This is hard-coded for black as an AI
-    // function onMoveEnd () {
-    //   $board.find('.square-' + squareToHighlight)
-    //     .addClass('highlight-black')
-    // }
 
     var config = {
       draggable: true,
@@ -228,11 +235,15 @@ hooks.myBoard = {
     // }
 
     function requestAiMove() {
-      let currentTurn = game.turn();
+      if (game.game_over()) {
+        return;
+      }
+      var currentTurn = game.turn();
       if (currentTurn === 'w') {
         // highlight white AI's move
-        let move = getWhiteAiMove(game);
+        var move = getWhiteAiMove(game);
         game.move(move);
+        playAudio(move);
         window.globalScore = dynamicEvalGame(game, move, window.globalScore);
         highlightWhiteMove(move.from, move.to);
         if (blackPlayerType == 'manual') {
@@ -240,8 +251,9 @@ hooks.myBoard = {
         }
       } else {
         // highlight black AI's move
-        let move = getBlackAiMove(game);
-        let attempt = game.move(move);
+        var move = getBlackAiMove(game);
+        game.move(move);
+        playAudio(move);
         window.globalScore = dynamicEvalGame(game, move, window.globalScore);
         highlightBlackMove(move.from, move.to);
         if (whitePlayerType == 'manual') {
@@ -249,6 +261,22 @@ hooks.myBoard = {
         }
       }
       board.position(game.fen());
+      removeGreySquares();
+      updateStatus();
+    }
+
+    // If needed, requests an AI move on:
+    // (1) New game (if white is manual)
+    // (2) Set FEN (if it is an AI's turn)
+    // (3) Player updates (if new player is manual)
+    function maybeRequestAiMove() {
+      if (whitePlayerType != 'manual' && blackPlayerType != 'manual') {
+        return;
+      } else if (game.turn() === 'w' && whitePlayerType != 'manual') {
+        window.setTimeout(requestAiMove, 500);
+      } else if (game.turn() === 'b' && blackPlayerType != 'manual') {
+        window.setTimeout(requestAiMove, 500);
+      }
     }
 
     function getWhiteAiMove(game) {
@@ -286,21 +314,26 @@ hooks.myBoard = {
       window.globalScore = staticEvalGame(game);
       removeAllHighlights();
       updateStatus();
+
+      maybeRequestAiMove();
     });
 
     this.handleEvent('update-black-player-settings', (e) => {
       window.blackPlayerType = e.type;
       window.blackPlayerDepth = e.depth;
+
+      maybeRequestAiMove();
     });
 
     this.handleEvent('update-white-player-settings', (e) => {
       window.whitePlayerType = e.type;
       window.whitePlayerDepth = e.depth;
+
+      maybeRequestAiMove();
     });
 
     this.handleEvent('toggle-ai-battle', (_e) => {
       playingAiBattle = !playingAiBattle;
-      console.log('Beginning AI heads up battle!');
       window.setTimeout(doAiBattle, 500);
     });
 
@@ -336,6 +369,8 @@ hooks.myBoard = {
       board.position(game.fen());
       removeAllHighlights();
       updateStatus();
+
+      maybeRequestAiMove();
     });
 
     document.querySelector('#undoBtn').addEventListener('click', () => {
@@ -355,21 +390,27 @@ hooks.myBoard = {
       board.position(game.fen());
       removeAllHighlights();
       updateStatus();
+
+      maybeRequestAiMove();
     });
 
     document.querySelector('#flipBoardBtn').addEventListener('click', () => {
       board.flip();
-    });
+      if (whiteHighlightedMove != null) {
+        var from = whiteHighlightedMove[0]
+        var to = whiteHighlightedMove[1]
+        highlightWhiteMove(from, to)
+      }
 
-    // document.querySelector('#aiBtn').addEventListener('click', () => {
-    //   playingAiBattle = !playingAiBattle;
-    //   console.log('Beginning AI heads up battle!');
-    //   window.setTimeout(doAiBattle, 500);
-    // });
+      if (blackHighlightedMove != null) {
+        var from = blackHighlightedMove[0]
+        var to = blackHighlightedMove[1]
+        highlightBlackMove(from, to);
+      }
+    });
 
     function doAiBattle() {
       if (game.game_over()) {
-        console.log('Finished AI Battle!')
         return;
       }
       if (!playingAiBattle) {
@@ -380,6 +421,16 @@ hooks.myBoard = {
       board.position(game.fen());
       updateStatus();
       window.setTimeout(doAiBattle, 500);
+    }
+
+    async function playAudio(move) {
+      if (move.captured != null) {
+        await piece_capture_audio.play();
+      } else if (move.color == 'w') {
+        await normal_move_audio.play();
+      } else if (move.color == 'b') {
+        await normal_move_audio.play();
+      }
     }
 
     // UPDATE STATUS TAGS 

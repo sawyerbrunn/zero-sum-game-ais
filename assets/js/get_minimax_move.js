@@ -24,7 +24,6 @@ function minimax(game, depth, alpha, beta, isMaximizer, score) {
   var maxVal = Number.NEGATIVE_INFINITY;
   var minVal = Number.POSITIVE_INFINITY;
   var currUglyMove, bestMove, bestDepth;
-  bestMove = children[0];
   bestDepth = 0;
   for (currUglyMove of children) {
     // Note: each child is a move we are considering
@@ -88,6 +87,10 @@ function minimax(game, depth, alpha, beta, isMaximizer, score) {
     }
   }
 
+  if (typeof bestMove == 'undefined') {
+    bestMove = game.make_pretty(children[0]);
+  }
+
   return [bestMove, (isMaximizer) ? maxVal : minVal, 0]
 }
 
@@ -100,7 +103,6 @@ function shouldPrune(alpha, beta) {
 function getMinimaxMove (game, depth, score) {
   var turn = game.turn();
   let res = minimax(game, depth, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, turn === 'w', score)
-  console.log(res);
   return res[0];
 }
 
