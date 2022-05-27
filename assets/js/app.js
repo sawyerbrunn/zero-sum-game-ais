@@ -135,15 +135,21 @@ hooks.myBoard = {
         window.globalScore = dynamicEvalGame(game, move, window.globalScore);
       }
       if (game.turn() === 'b' && window.blackPlayerType != 'manual') {
+        removeHighlights('black');
         window.setTimeout(function() {
           requestMoveFromServer(game.fen(), game.turn());
         }, 250);
+      } else if (game.turn() === 'b') {
+        removeHighlights('black');
       } else if (game.turn() === 'w' && window.whitePlayerType != 'manual') {
+        removeHighlights('white')
         window.setTimeout(function() {
           requestMoveFromServer(game.fen(), game.turn());
         }, 250);
-    }
-
+      } else if (game.turn() === 'w') {
+        removeHighlights('white');
+      }
+      
       if (currentTurn === 'w') {
         highlightWhiteMove(source, target);
       } else if (currentTurn === 'b') {
@@ -229,12 +235,18 @@ hooks.myBoard = {
         game.move(move);
         window.globalScore = dynamicEvalGame(game, move, window.globalScore);
         highlightWhiteMove(move.from, move.to);
+        if (blackPlayerType == 'manual') {
+          removeHighlights('black');
+        }
       } else {
         // highlight black AI's move
         let move = getBlackAiMove(game);
         let attempt = game.move(move);
         window.globalScore = dynamicEvalGame(game, move, window.globalScore);
         highlightBlackMove(move.from, move.to);
+        if (whitePlayerType == 'manual') {
+          removeHighlights('white');
+        }
       }
       board.position(game.fen());
     }
