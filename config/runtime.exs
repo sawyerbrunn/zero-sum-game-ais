@@ -31,7 +31,6 @@ if config_env() == :prod do
   config :live_test, LiveTestWeb.Endpoint,
     server: true,
     # url: [host: host, port: 443],
-    check_origin: false,
     url: [host: System.get_env("APP_NAME") <> ".gigalixirapp.com", port: 443],
     # http: [
     #   # Enable IPv6 and bind on all interfaces.
