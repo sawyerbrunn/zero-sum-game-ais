@@ -16,6 +16,7 @@ config :live_test, LiveTestWeb.Endpoint,
   secret_key_base: "nOlocW2SzEN6R5kRqNDUJ+IGco+7tEi2E2UcPZRwe+x03XTh86Y4G13gmeOZDLfw",
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
+    tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]},
     npx: [
       "tailwindcss",
       "--input=css/app.css",
