@@ -18,7 +18,6 @@ defmodule LiveTest.Chess.AIWebApi do
           target: binary
         }
   def find_move(fen, turn \\ nil) do
-    IO.inspect("Finding move for fen #{fen}")
     case get_move_from_api(fen) do
       nil ->
         # Fallback to random or minimax move

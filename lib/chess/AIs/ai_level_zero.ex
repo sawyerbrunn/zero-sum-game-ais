@@ -4,9 +4,7 @@ defmodule LiveTest.Chess.AILevelZero do
 
 
   # TODO: Implement random moves
-  def find_move(game_fen, turn) do
-    IO.inspect(game_fen);
-    IO.inspect(turn);
+  def find_move(_game_fen, _turn) do
     %Move{source: "a7", target: "a6", display_name: "a7a6"}
   end
 
