@@ -33,8 +33,9 @@ if config_env() == :prod do
   config :live_test, LiveTestWeb.Endpoint,
     server: true,
     check_origin: [
-      "https://" <> System.get_env("APP_NAME") <> ".gigalixirapp.com",
-      "https://" <> host
+      "//" <> System.get_env("APP_NAME") <> ".gigalixirapp.com",
+      "//" <> host,
+      "//www." <> host
     ],
     url: [host: host, port: 443],
     # url: [host: System.get_env("APP_NAME") <> ".gigalixirapp.com", port: 443],
