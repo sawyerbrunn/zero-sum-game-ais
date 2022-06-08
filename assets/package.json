@@ -10,5 +10,8 @@
     "chess.js": "^0.13.2",
     "jquery": "^3.6.0",
     "node-fetch": "^2.6.1"
+  },
+  "scripts": {
+    "deploy": "cd .. && mix assets.deploy && rm -f _build/esbuild"
   }
 }
