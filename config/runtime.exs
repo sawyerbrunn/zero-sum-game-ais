@@ -28,10 +28,16 @@ if config_env() == :prod do
   # host = System.get_env("PHX_HOST") || "example.com"
   # port = String.to_integer(System.get_env("PORT") || "4000")
 
+  host = "sawyerbrunn.com"
+
   config :live_test, LiveTestWeb.Endpoint,
     server: true,
-    # url: [host: host, port: 443],
-    url: [host: System.get_env("APP_NAME") <> ".gigalixirapp.com", port: 443],
+    check_origin: [
+      "https://" <> System.get_env("APP_NAME") <> ".gigalixirapp.com",
+      "https://" <> host
+    ],
+    url: [host: host, port: 443],
+    # url: [host: System.get_env("APP_NAME") <> ".gigalixirapp.com", port: 443],
     # http: [
     #   # Enable IPv6 and bind on all interfaces.
     #   # Set it to  {0, 0, 0, 0, 0, 0, 0, 1} for local network only access.
