@@ -90,11 +90,8 @@ var pst_b = {
     'k_e': pst_w['k_e'].slice().reverse()
 }
 
-// var pstOpponent = {'w': pst_b, 'b': pst_w};
-// var pstSelf = {'w': pst_w, 'b': pst_b};
 
 function dynamicEvalGame(game, move, score) {
-    // Move if the current move being considered.
 
     if (game.in_checkmate()) {
   
@@ -116,11 +113,11 @@ function dynamicEvalGame(game, move, score) {
     if (game.in_check() && Math.abs(score) < 500) {
       // Black is in check!
       if (move.color === 'w') {
-        score += 50;
+        score += 25;
       }
       // White is in check!
       else {
-        score -= 50;
+        score -= 25;
       }
     }
   
