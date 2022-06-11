@@ -204,6 +204,7 @@ hooks.myBoard = {
       position: 'start',
       onDragStart: onDragStart,
       onDrop: onDrop,
+      pieceTheme: 'images/{piece}.png',
       // onMoveEnd: onMoveEnd,
       onMouseoutSquare: onMouseoutSquare,
       onMouseoverSquare: onMouseoverSquare,
