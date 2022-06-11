@@ -26,86 +26,121 @@
     <p class="alert alert-danger" role="alert"
       phx-click="lv:clear-flash"
       phx-value-key="error"><%= live_flash(@flash, :error) %></p>
-  <nav class="bg-gray-800">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-16">
-        <div class="flex items-center">
-          <div class="flex-shrink-0">
-            <img class="h-8 w-8" src="https://tailwindui.com/img/logos/workflow-mark-indigo-500.svg" alt="Workflow">
-          </div>
-          <div class="hidden md:block">
-            <%= LiveTest.LiveHelpers.navbar_component(@socket) %>
-          </div>
-        </div>
-        <div class="hidden md:block">
-          <div class="ml-4 flex items-center md:ml-6">
-            <button type="button" class="bg-gray-800 p-1 rounded-full text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
-              <span class="sr-only">View notifications</span>
-              <!-- Heroicon name: outline/bell -->
-              <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
-            </button>
-
-            <!-- Profile dropdown -->
-            <div class="ml-3 relative">
 
 
-              <!--
-                Dropdown menu, show/hide based on menu state.
+  <%= # NAV BAR %>
+  <nav class="relative w-full flex flex-wrap items-center justify-between py-3 bg-gray-800 text-gray-200 shadow-lg navbar navbar-expand-md navbar-light md:px-20">
 
-                Entering: "transition ease-out duration-100"
-                  From: "transform opacity-0 scale-95"
-                  To: "transform opacity-100 scale-100"
-                Leaving: "transition ease-in duration-75"
-                  From: "transform opacity-100 scale-100"
-                  To: "transform opacity-0 scale-95"
-              -->
-            </div>
-          </div>
-        </div>
-        <div class="-mr-2 flex md:hidden">
-          <!-- Mobile menu button -->
-          <button type="button" class="bg-gray-800 inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
-            <span class="sr-only">Open main menu</span>
-            <!--
-              Heroicon name: outline/menu
-
-              Menu open: "hidden", Menu closed: "block"
-            -->
-            <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-            <!--
-              Heroicon name: outline/x
-
-              Menu open: "block", Menu closed: "hidden"
-            -->
-            <svg class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Mobile menu, show/hide based on menu state. -->
-    <div class="md:hidden" id="mobile-menu">
-      <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-        <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
-        <a href="#" class="bg-gray-900 text-white block px-3 py-2 rounded-md text-base font-medium" aria-current="page">Dashboard</a>
-
-        <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Team</a>
-
-        <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Projects</a>
-
-        <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Calendar</a>
-
-        <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Reports</a>
-      </div>
+    <div class="container-fluid w-full flex flex-wrap items-center justify-between px-6">
+      <button
+        class="navbar-toggler text-gray-200 border-0 hover:shadow-none hover:no-underline py-2 px-2.5 bg-transparent focus:outline-none focus:ring-0 focus:shadow-none focus:no-underline"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarSupportedContent1"
+        aria-controls="navbarSupportedContent"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          data-prefix="fas"
+          data-icon="bars"
+          class="w-6"
+          role="img"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 448 512"
+        >
+          <path
+            fill="currentColor"
+            d="M16 132h416c8.837 0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163 0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"
+          ></path>
+        </svg>
+      </button>
       
+      <div class="collapse navbar-collapse md:ml-10 flex items-baseline space-x-4" id="navbarSupportedContent1">
+        <!-- Left links -->
+        <%= LiveTest.LiveHelpers.navbar_component(@socket) %>
+      </div>
+      <!-- Collapsible wrapper -->
+
+      <!-- Right elements -->
+      <div class="flex items-center relative">
+        <!-- Icon -->
+        <div class="dropdown relative">
+          <ul
+            class="dropdown-menu min-w-max absolute bg-white text-base z-50 float-left py-2 list-none text-left rounded-lg shadow-lg mt-1 hidden m-0 bg-clip-padding border-none left-auto right-0"
+            aria-labelledby="dropdownMenuButton1"
+          >
+            <li>
+              <a
+                class="dropdown-item text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100"
+                href="#"
+                >Action</a>
+            </li>
+            <li>
+              <a
+                class="dropdown-item text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100"
+                href="#"
+                >Another action</a>
+            </li>
+            <li>
+              <a
+                class="dropdown-item text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100"
+                href="#"
+                >Something else here</a>
+            </li>
+          </ul>
+        </div>
+        <div class="dropdown relative">
+          <a
+            class="dropdown-toggle flex items-center hidden-arrow"
+            href="#"
+            id="dropdownMenuButton2"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <img
+              src="https://tailwindui.com/img/logos/workflow-mark-indigo-500.svg"
+              class="rounded-full"
+              style="height: 25px; width: 25px"
+              alt=""
+              loading="lazy"
+            />
+          </a>
+          <ul
+            class="dropdown-menu min-w-max absolute hidden bg-white text-base z-50 float-left py-2 list-none text-left rounded-lg shadow-lg mt-1 m-0 bg-clip-padding border-none left-auto right-0"
+            aria-labelledby="dropdownMenuButton2"
+          >
+            <li>
+              <a
+                class="dropdown-item text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100"
+                href="#"
+                >Action</a>
+            </li>
+            <li>
+              <a
+                class="dropdown-item text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100"
+                href="#"
+                >Another action</a>
+            </li>
+            <li>
+              <a
+                class="dropdown-item text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100"
+                href="#"
+                >Something else here</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <!-- Right elements -->
     </div>
   </nav>
+
+
+
+  <%= # MAIN CONTENT %>
   <main>
     <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
       <!-- Replace with your content -->
@@ -114,3 +149,4 @@
     </div>
   </main>
 </div>
+
