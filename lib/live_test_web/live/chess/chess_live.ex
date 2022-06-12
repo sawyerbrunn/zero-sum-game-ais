@@ -285,7 +285,7 @@ defmodule LiveTestWeb.ChessLive do
     ~H"""
     <div class="grid grid-cols-4 space-x-2">
       <div class="col-start-1 col-span-1">
-        <button id="setStartBtn" phx-click="pause-ai-game" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 border border-gray-700 rounded w-full">
+        <button data-bs-toggle="modal" data-bs-target="#newGameModal" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 border border-gray-700 rounded w-full">
           New
         </button>
       </div>
@@ -300,7 +300,7 @@ defmodule LiveTestWeb.ChessLive do
         </button>
       </div>
       <div class="col-start-4 col-span-1">
-        <button id="set-fen" phx-click="set-fen" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 border border-gray-700 rounded w-full">
+        <button data-bs-toggle="modal" data-bs-target="#fenModal" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 border border-gray-700 rounded w-full">
           Fen
         </button>
       </div>
