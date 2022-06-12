@@ -328,15 +328,13 @@ hooks.myBoard = {
     });
 
     this.handleEvent('set-fen', (e) => {
-      console.log("Setting fen!")
-      console.log(e.fen)
-      game.load(e.fen)
-      board.position(game.fen());
-      window.globalScore = staticEvalGame(game);
-      removeAllHighlights();
-      updateStatus();
-
-      maybeRequestAiMove();
+       if (game.load(e.fen)) {
+        board.position(game.fen());
+        window.globalScore = staticEvalGame(game);
+        removeAllHighlights();
+        updateStatus();
+        maybeRequestAiMove();
+       }
     });
 
     this.handleEvent('update-black-player-settings', (e) => {
@@ -392,6 +390,10 @@ hooks.myBoard = {
       updateStatus();
 
       maybeRequestAiMove();
+    });
+
+    document.querySelector('#copyFenBtn').addEventListener('click', () => {
+      navigator.clipboard.writeText(game.fen());
     });
 
     document.querySelector('#undoBtn').addEventListener('click', () => {
