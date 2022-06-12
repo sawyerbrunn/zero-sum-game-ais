@@ -66,13 +66,9 @@ hooks.myBoard = {
 
     window.game = game;
 
-    var scrollable = true;
-    var listener = function(e) {
-      if (! scrollable) {
-          e.preventDefault();
-      }
-  }
-  document.addEventListener('touchmove', listener, { passive: false });
+    jQuery('#myBoard').on('scroll touchmove touchend touchstart contextmenu', function(e){
+      e.preventDefault();
+    });
 
     const whiteSquareGrey = '#a9a9a9';
     const blackSquareGrey = '#696969';
@@ -137,12 +133,10 @@ hooks.myBoard = {
         return false
       }
       highlightLegalMoves(source, piece);
-      scrollable = false;
     }
 
     // TODO: Allow dynamic piece promotion
     function onDrop (source, target) {
-      scrollable = true;
       let currentTurn = game.turn();
       removeGreySquares()
 
@@ -204,17 +198,14 @@ hooks.myBoard = {
     }
 
     function onMouseoverSquare (square, piece) {
-      scrollable = true;
       highlightLegalMoves(square, piece);
     }
 
     function onMouseoutSquare (square, piece) {
-      scrollable = true;
       removeGreySquares()
     }
 
     function onSnapEnd () {
-      scrollable = true;
       board.position(game.fen());
     }
 
