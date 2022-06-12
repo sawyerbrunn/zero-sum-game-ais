@@ -66,6 +66,14 @@ hooks.myBoard = {
 
     window.game = game;
 
+    var scrollable = true;
+    var listener = function(e) {
+      if (! scrollable) {
+          e.preventDefault();
+      }
+  }
+  document.addEventListener('touchmove', listener, { passive: false });
+
     const whiteSquareGrey = '#a9a9a9';
     const blackSquareGrey = '#696969';
 
@@ -128,10 +136,13 @@ hooks.myBoard = {
           (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
         return false
       }
+      highlightLegalMoves(source, piece);
+      scrollable = false;
     }
 
     // TODO: Allow dynamic piece promotion
     function onDrop (source, target) {
+      scrollable = true;
       let currentTurn = game.turn();
       removeGreySquares()
 
@@ -173,7 +184,7 @@ hooks.myBoard = {
       updateStatus();
     }
 
-    function onMouseoverSquare (square, piece) {
+    function highlightLegalMoves(square, piece) {
       // get list of possible moves for this square
       var moves = game.moves({
         square: square,
@@ -192,11 +203,18 @@ hooks.myBoard = {
       }
     }
 
+    function onMouseoverSquare (square, piece) {
+      scrollable = true;
+      highlightLegalMoves(square, piece);
+    }
+
     function onMouseoutSquare (square, piece) {
+      scrollable = true;
       removeGreySquares()
     }
 
     function onSnapEnd () {
+      scrollable = true;
       board.position(game.fen());
     }
 
@@ -231,6 +249,16 @@ hooks.myBoard = {
     function pushHistory(history) {
       mount.pushEvent("update-history", {history});
     };
+
+    function pushScore(score) {
+      if (score == Number.POSITIVE_INFINITY) {
+        mount.pushEvent("update-score", {score: 'inf'});
+      } else if (score == Number.NEGATIVE_INFINITY) {
+        mount.pushEvent("update-score", {score: '-inf'});
+      } else {
+        mount.pushEvent("update-score", {score: score});
+      }
+    }
 
     // function announceGameOver(status) {
     //   mount.pushEvent("game-over", {status});
@@ -469,10 +497,14 @@ hooks.myBoard = {
       var globalScoreStr;
       if (globalScore >= 500) {
         globalScoreStr = window.globalScore + '. (White is winning!)'
+      } else if (globalScore >= 250) {
+        globalScoreStr = window.globalScore + '. (White has an advantage)'
       } else if (window.globalScore <= -500) {
         globalScoreStr = window.globalScore + '. (Black is winning!)'
+      } else if (window.globalScore <= -250) {
+        globalScoreStr = window.globalScore + '. (Black has an advantage)'
       } else {
-        globalScoreStr = window.globalScore + ''
+        globalScoreStr = window.globalScore + '. (It\'s a close game!)'
       }
     
       $status.html(status);
@@ -480,6 +512,7 @@ hooks.myBoard = {
       $fen.html(game.fen());
       $pgn.html(game.pgn());
       pushHistory(game.history());
+      pushScore(globalScore);
     }
 
   }
