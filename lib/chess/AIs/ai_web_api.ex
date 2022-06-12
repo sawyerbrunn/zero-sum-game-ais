@@ -1,8 +1,18 @@
 defmodule LiveTest.Chess.AIWebApi do
+  @moduledoc """
+  A module that allows chess moves to be generated
+  from querying a web API.
+
+  By passing a FEN-encoded chess game to a chess engine
+  or chess database, it may be possible to build an
+  incredible strong chess AI using moves from ML trained
+  engines, without having to train a model yourself.
+
+  # TODO: Find a better web API to request moves from.
+  """
   alias LiveTest.Chess.Move
   require Logger
 
-  # TODO: Find a better web API to request moves from
   @url "https://www.chessdb.cn/cdb.php"
 
 

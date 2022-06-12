@@ -27,7 +27,7 @@ defmodule LiveTest.LiveHelpers do
         <%= link "Chess", to: Routes.live_path(socket, LiveTestWeb.ChessLive), class: get_chess_link_class(socket) %>
       </li>
       <li class="nav-item p-2">
-        <%= link "Tic-Tac-Toe (Beta)", to: Routes.game_path(socket, :index), class: get_ttt_link_class(socket) %>
+        <%= link "Tic-Tac-Toe (Beta)", to: Routes.tic_tac_toe_path(socket, :index), class: get_ttt_link_class(socket) %>
       </li>
       <li class="nav-item p-2">
         <a
@@ -41,6 +41,6 @@ defmodule LiveTest.LiveHelpers do
 
   defp get_chess_link_class(%{view: LiveTestWeb.ChessLive} = _socket), do: "nav-link bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium"
   defp get_chess_link_class(_socket), do: "nav-link text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-  defp get_ttt_link_class(%{view: LiveTestWeb.GameLive} = _socket), do: "nav-link bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium"
+  defp get_ttt_link_class(%{view: LiveTestWeb.TicTacToeLive} = _socket), do: "nav-link bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium"
   defp get_ttt_link_class(_socket), do: "nav-link text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
 end

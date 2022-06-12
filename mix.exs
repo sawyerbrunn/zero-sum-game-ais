@@ -48,7 +48,6 @@ defmodule LiveTest.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:httpoison, "~> 1.8"},
       {:poison, "~> 5.0"},
-      {:nodejs, "~> 2.0"},
       {:tailwind, "~> 0.1", runtime: Mix.env() == :dev}
     ]
   end

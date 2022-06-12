@@ -14,6 +14,8 @@ defmodule LiveTest.Chess.Player do
   """
 
   @default_depth 3
+  @default_type :minimax_ai
+  @supported_types [:ai_minimax, :ai_random, :manual]
 
   defstruct [
     type: :manual,
@@ -21,4 +23,6 @@ defmodule LiveTest.Chess.Player do
   ]
 
   def default_depth(), do: @default_depth
+  def default_type(), do: @default_type
+  def supported?(type), do: type in @supported_types
 end

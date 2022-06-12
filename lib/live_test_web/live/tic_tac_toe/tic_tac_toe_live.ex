@@ -1,4 +1,4 @@
-defmodule LiveTestWeb.GameLive do
+defmodule LiveTestWeb.TicTacToeLive do
   use LiveTestWeb, :live_view
 
   @ai_opts [{"Manual", :manual}, {"AI Level 0", :ai_zero}]
