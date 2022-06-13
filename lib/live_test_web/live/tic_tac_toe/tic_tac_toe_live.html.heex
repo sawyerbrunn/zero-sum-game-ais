@@ -27,6 +27,11 @@
       </div>
     </div>
     <div class="md:col-start-6 md:col-span-3 md:pl-4">
+
+      <div class="py-2">
+        <.game_buttons_component />
+      </div>
+
       <div class="py-2 md:py-0">
         AI settings go here
       </div>
@@ -41,9 +46,10 @@
         </div>
       </div>
 
-      <div class="py-2">
-        Buttons Here
-      </div>
     </div>
   </div>
+  <div phx-update="ignore">
+    <%= live_component LiveTest.TicTacToeModalNewComponent %>
+  </div>
 </div>
+
