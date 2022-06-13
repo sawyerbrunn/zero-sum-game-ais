@@ -48,11 +48,11 @@ defmodule LiveTest.TicTacToe.Board do
   Undoes the last move make on the board, and returns
   a new board.
 
-  Returns :error if there is nothing to undo.
+  Does nothing if the the board is in the initial state.
   """
   def undo(%__MODULE__{turn_number: turn_number} = board) do
     if turn_number == 0 do
-      :error
+      board
     else
       %__MODULE__{
         state: Map.get(board.history, turn_number - 1),

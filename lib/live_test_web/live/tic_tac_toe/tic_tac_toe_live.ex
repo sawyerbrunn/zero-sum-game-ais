@@ -2,8 +2,10 @@ defmodule LiveTestWeb.TicTacToeLive do
   use LiveTestWeb, :live_view
   require Logger
   alias LiveTest.TicTacToe.Board
+  alias LiveTest.TicTacToe.AiRandom
+  alias LiveTest.TicTacToe.AiMinimax
 
-  @ai_opts [{"Manual", :manual}, {"AI Level 0", :ai_zero}]
+  @ai_opts [{"Manual", :manual}, {"Random", :ai_random}, {"Minimax", :ai_minimax}]
 
   @impl true
   def mount(_params, _session, socket) do
@@ -15,9 +17,9 @@ defmodule LiveTestWeb.TicTacToeLive do
       |> assign(board: board)
       |> assign(turn: board.current_turn)
       |> assign(winner: nil)
-      |> assign(@ai_opts)
+      |> assign(ai_opts: @ai_opts)
       |> assign(x_opt: :manual)
-      |> assign(o_opt: :ai_zero)
+      |> assign(o_opt: :ai_minimax)
     }
   end
 
@@ -42,7 +44,7 @@ defmodule LiveTestWeb.TicTacToeLive do
       true ->
         case Board.make_move(board, turn, index) do
           %Board{current_turn: new_turn} = new_board ->
-            Process.send_after(self(), :ai_move, 1000)
+            maybe_request_ai_move(new_board, socket.assigns.x_opt, socket.assigns.o_opt)
             {:noreply,
               socket
               |> assign(board: new_board)
@@ -68,6 +70,29 @@ defmodule LiveTestWeb.TicTacToeLive do
     }
   end
 
+  def handle_event("undo", _, socket) do
+    x_opt = socket.assigns.x_opt
+    o_opt = socket.assigns.o_opt
+    board = socket.assigns.board
+    new_board =
+      if x_opt == :manual and o_opt == :manual do
+        # Undo onee if both are manual
+        board
+        |> Board.undo()
+      else
+        # Otherwise, undo twice
+        board
+        |> Board.undo()
+        |> Board.undo()
+      end
+    {:noreply,
+      socket
+      |> assign(board: new_board)
+      |> assign(turn: new_board.current_turn)
+      |> assign(winner: Board.find_winner(new_board))
+    }
+  end
+
   @impl true
   def handle_event(val, params, socket) do
     Logger.error("failed to handle an event")
@@ -80,75 +105,89 @@ defmodule LiveTestWeb.TicTacToeLive do
   def handle_info(:ai_move, socket) do
     # Just makes a random move for now
     board = socket.assigns.board
-    case Board.list_legal_moves(board) do
-      [] ->
-        {:noreply, socket}
-      legal_moves ->
-        index = Enum.random(legal_moves)
+    x_opt = socket.assigns.x_opt
+    o_opt = socket.assigns.o_opt
 
-        # Assumes chosen move is legal
-        new_board = Board.make_move(board, socket.assigns.turn, index)
-        new_turn = new_board.current_turn
-        {:noreply,
-          socket
-          |> assign(board: new_board)
-          |> assign(turn: new_turn)
-          |> assign(winner: Board.find_winner(new_board))
-        }
+    module =
+      cond do
+        board.current_turn == "X" and x_opt == :ai_random ->
+          AiRandom
+        board.current_turn == "X" and x_opt == :ai_minimax ->
+          AiMinimax
+        board.current_turn == "O" and o_opt == :ai_random ->
+          AiRandom
+        board.current_turn == "O" and o_opt == :ai_minimax ->
+          AiMinimax
+        true ->
+          Logger.error("No matching module for #{x_opt} / #{o_opt}")
+          nil
+      end
+    case Board.find_winner(board) do
+      nil ->
+        move = module.find_move(board)
+        case Board.make_move(board, socket.assigns.turn, move) do
+          %Board{} = new_board ->
+            {:noreply,
+              socket
+              |> assign(board: new_board)
+              |> assign(turn: new_board.current_turn)
+              |> assign(winner: Board.find_winner(new_board))
+            }
+          _ ->
+            Logger.error("AI find_move/1 returned an illegal move.")
+            {:noreply, socket}
+        end
+      _ ->
+        # The game is over.
+        {:noreply, socket}
+    end
+    # case Board.list_legal_moves(board) do
+    #   [] ->
+    #     {:noreply, socket}
+    #   legal_moves ->
+    #     index = Enum.random(legal_moves)
+
+    #     # Assumes chosen move is legal
+    #     new_board = Board.make_move(board, socket.assigns.turn, index)
+    #     new_turn = new_board.current_turn
+    #     {:noreply,
+    #       socket
+    #       |> assign(board: new_board)
+    #       |> assign(turn: new_turn)
+    #       |> assign(winner: Board.find_winner(new_board))
+    #     }
+    # end
+  end
+
+  defp maybe_request_ai_move(new_board, x_opt, o_opt) do
+    cond do
+      new_board.current_turn == "X" and x_opt != :manual ->
+        Process.send_after(self(), :ai_move, 1000)
+      new_board.current_turn == "O" and o_opt != :manual ->
+        Process.send_after(self(), :ai_move, 1000)
+      true ->
+        nil
     end
   end
 
-  # # make a move and out the move in the socket
-  # defp maybe_make_ai_move(socket) do
-  #   turn = socket.assigns.turn
-  #   move = make_move(:ai_zero, socket.assigns.board)
-  #   board = Map.put(socket.assigns.board, move, turn)
-  #   socket
-  #   |> assign(board: board)
-  #   |> assign(turn: other(turn))
-  #   |> assign(winner: find_winner(board))
-  # end
-
-  # defp make_move(:ai_zero, board) do
-  #   0..8
-  #   |> Enum.to_list()
-  #   |> Enum.filter(&is_legal?(board, &1))
-  #   |> Enum.random()
-  # end
-
-  # defp is_legal?(board, i) do
-  #   Map.get(board, i) == "_"
-  # end
-
-  # defp find_winner(board) do
-  #   checks = [
-  #     [0, 1, 2],
-  #     [3, 4, 5],
-  #     [6, 7, 8],
-  #     [0, 3, 6],
-  #     [1, 4, 7],
-  #     [2, 5, 8],
-  #     [0, 4, 8],
-  #     [2, 4, 6]
-  #   ]
-  #   Enum.map(checks, fn check_list ->
-  #     if Map.get(board, Enum.at(check_list, 0)) != "_" and Map.get(board, Enum.at(check_list, 0)) == Map.get(board, Enum.at(check_list, 1)) and Map.get(board, Enum.at(check_list, 0)) ==Map.get(board, Enum.at(check_list, 2)) do
-  #       Map.get(board, Enum.at(check_list, 0))
-  #     else
-  #       nil
-  #     end
-  #   end)
-  #   |> Enum.filter(& &1 != nil)
-  #   |> case do
-  #     [] -> nil
-  #     _ = winner_list -> Enum.at(winner_list, 0)
-  #   end
-  # end
-
-  # defp other("X"), do: "O"
-  # defp other("O"), do: "X"
-
   ### Components ###
+
+  defp game_buttons_component(assigns) do
+    ~H"""
+    <div class="grid grid-cols-2 space-x-2">
+      <div class="col-start-1 col-span-1">
+        <button data-bs-toggle="modal" data-bs-target="#newGameModal" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded w-full">
+          New Game
+        </button>
+      </div>
+      <div class="col-start-2 col-span-1">
+        <button phx-click="undo" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded w-full">
+          Undo Move
+        </button>
+      </div>
+    </div>
+    """
+  end
 
   defp o_component(assigns) do
     ~H"""
