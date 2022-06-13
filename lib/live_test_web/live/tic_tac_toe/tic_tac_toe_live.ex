@@ -24,28 +24,35 @@ defmodule LiveTestWeb.TicTacToeLive do
   def handle_event("move", _params, socket) when socket.assigns.winner != nil do
     {:noreply,
       socket
-      |> put_flash(:info, "The game is over! #{socket.assigns.winner} has won.")
+      # |> put_flash(:info, "The game is over! #{socket.assigns.winner} has won.")
     }
   end
 
+  # Handle manual moves from the user
   def handle_event("move", %{"index" => index_str}, socket) do
     {index, _} = Integer.parse(index_str)
     board = socket.assigns.board
     turn = socket.assigns.turn
 
-    case Board.make_move(board, turn, index) do
-      %Board{current_turn: new_turn} = new_board ->
-        Process.send_after(self(), :ai_move, 1000)
-        {:noreply,
-          socket
-          |> assign(board: new_board)
-          |> assign(turn: new_turn)
-          |> assign(winner: Board.find_winner(board))
-          # |> maybe_make_ai_move()
-        }
-      error ->
-        IO.inspect("illegal move attempted. Reason: #{error}")
+    cond do
+      board.current_turn == "X" and socket.assigns.x_opt != :manual ->
         {:noreply, socket}
+      board.current_turn == "O" and socket.assigns.o_opt != :manual ->
+        {:noreply, socket}
+      true ->
+        case Board.make_move(board, turn, index) do
+          %Board{current_turn: new_turn} = new_board ->
+            Process.send_after(self(), :ai_move, 1000)
+            {:noreply,
+              socket
+              |> assign(board: new_board)
+              |> assign(turn: new_turn)
+              |> assign(winner: Board.find_winner(new_board))
+            }
+          error ->
+            IO.inspect("illegal move attempted. Reason: #{error}")
+            {:noreply, socket}
+        end
     end
   end
 
@@ -71,8 +78,24 @@ defmodule LiveTestWeb.TicTacToeLive do
 
   @impl true
   def handle_info(:ai_move, socket) do
-    IO.inspect("I should make an AI move!")
-    {:noreply, socket}
+    # Just makes a random move for now
+    board = socket.assigns.board
+    case Board.list_legal_moves(board) do
+      [] ->
+        {:noreply, socket}
+      legal_moves ->
+        index = Enum.random(legal_moves)
+
+        # Assumes chosen move is legal
+        new_board = Board.make_move(board, socket.assigns.turn, index)
+        new_turn = new_board.current_turn
+        {:noreply,
+          socket
+          |> assign(board: new_board)
+          |> assign(turn: new_turn)
+          |> assign(winner: Board.find_winner(new_board))
+        }
+    end
   end
 
   # # make a move and out the move in the socket

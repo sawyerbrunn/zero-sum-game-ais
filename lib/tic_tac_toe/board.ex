@@ -63,6 +63,18 @@ defmodule LiveTest.TicTacToe.Board do
     end
   end
 
+  @doc """
+  Lists all legal moves that can be made on the
+  given board.
+
+  A move is just an index to make a move at (0..8)
+  """
+  def list_legal_moves(%__MODULE__{} = board) do
+    0..8
+    |> Enum.map(& &1)
+    |> Enum.filter(& validate_move(board, board.current_turn, &1) == :ok)
+  end
+
   def validate_move(board, piece, index) do
     cond do
       find_winner(board) != nil ->
@@ -104,6 +116,8 @@ defmodule LiveTest.TicTacToe.Board do
       _ = winner_list -> Enum.at(winner_list, 0)
     end
   end
+
+  ### Private ###
 
   defp other("X"), do: "O"
   defp other("O"), do: "X"
