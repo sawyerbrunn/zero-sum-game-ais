@@ -1,92 +1,49 @@
-<main>
-	<div class="px-20 py-20">
-		<h1 class="text-indigo-600 text-5xl font-bold text-left pl-20">Tic Tac Toe</h1>
-		<div class="border border-gray-600 rounded-xl shadow-md">
-			<div class="grid grid-cols-3 pb-20">
+<div class="px-2 max-w-6xl">
 
-				<div class="col-start-2 col-span-1 text-center pt-20">
-					Make move for <%= @turn %>:
-				</div>
+  <div class="text-center font-extrabold text-xl md:text-3xl pb-2">
+    <h1> The Game of Tic Tac Toe </h1>
+  </div>
+  <div class="md:grid md:grid-cols-8 px-2">
+    <div class="md:col-start-1 md:col-span-5">
+      <div class="w-full grid grid-cols-3">
+        <%= for row <- 1..3 do %>
+          <%= for col <- 1..3 do %>
+            <% index = (row - 1) * 3 + col - 1 %>
+            <button class={"flex col-start-#{col} col-span-1 h-28 md:h-40 shadow rounded-lg border border-gray-200 bg-blue-200 w-full"} phx-click="move" phx-value-index={index}>
+              <span class="text-gray-500"> <%= index + 1 %> </span>
+              <div class="m-auto">
+                <%= case Map.get(@board.state, index) do %>
+                  <% "X" -> %>
+                    <.x_component />
+                  <% "O" -> %>
+                    <.o_component />
+                  <% _ -> %>
+                    <%= # Nothing %>
+                <% end %>
+              </div>
+            </button>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+    <div class="md:col-start-6 md:col-span-3 md:pl-4">
+      <div class="py-2 md:py-0">
+        AI settings go here
+      </div>
 
-				<div class="col-start-1 col-span-1 text-center">
-					Some settings over here
-				</div>
+      <div>
+        Score here
+      </div>
 
-				<table>
-					<tr class="h-12 border border-black">
-						<td class="border border-black text-center">
-							<button phx-click="move" phx-value-index={0} class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
-								<%= Map.get(@board, 0) %>
-							</button>
-						</td>
-						<td class="border border-black text-center">
-							<button phx-click="move" phx-value-index={1} class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
-								<%= Map.get(@board, 1) %>
-							</button>
-						</td>
-						<td class="border border-black text-center">
-							<button phx-click="move" phx-value-index={2} class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
-								<%= Map.get(@board, 2) %>
-							</button>
-						</td>
-					</tr>
-					<tr class="h-12 border border-black">
-						<td class="border border-black text-center">
-							<button phx-click="move" phx-value-index={3} class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
-								<%= Map.get(@board, 3) %>
-							</button>
-						</td>
-						<td class="border border-black text-center">
-							<button phx-click="move" phx-value-index={4} class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
-								<%= Map.get(@board, 4) %>
-							</button>
-						</td>
-						<td class="border border-black text-center">
-							<button phx-click="move" phx-value-index={5} class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
-								<%= Map.get(@board, 5) %>
-							</button>
-						</td>
-					</tr>
-					<tr class="h-12 border border-black">
-						<td class="border border-black text-center">
-							<button phx-click="move" phx-value-index={6} class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
-								<%= Map.get(@board, 6) %>
-							</button>
-						</td>
-						<td class="border border-black text-center">
-							<button phx-click="move" phx-value-index={7} class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
-								<%= Map.get(@board, 7) %>
-							</button>
-						</td>
-						<td class="border border-black text-center">
-							<button phx-click="move" phx-value-index={8} class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
-								<%= Map.get(@board, 8) %>
-							</button>
-						</td>
-					</tr>
-			</table>
+      <div class="py-2">
+        <div class="w-full rounded-md shadow border border-gray-500">
+          Game history here
+        </div>
+      </div>
 
-			<div class="col-start-3 col-span-1 text-center">
-				<div>
-					Undo buttons and stuff over here
-				</div>
-				<button phx-click="new-game" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-					New Game
-				</button>
-			</div>
-
-			<div class="col-start-2 col-span-1 text-center">
-				<%= if @winner != nil do %>
-					<div class="text-green-500">
-						Game over! <%= @winner %> wins.
-					</div>
-				<% end %>
-				<div class="text-red-600">
-					<%= live_flash(@flash, :info) %>
-				</div>
-			</div>
-
-			</div>
-		</div>
-	</div>
-</main>
+      <div class="py-2">
+        Buttons Here
+      </div>
+    </div>
+  </div>
+</div>
