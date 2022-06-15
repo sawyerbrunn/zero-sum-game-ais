@@ -19,22 +19,10 @@ defmodule LiveTestWeb.ChessLive do
   end
 
   @impl true
-  # def handle_event("game-over", %{"winner" => winner, "gameOverReason" => reason}, socket) do
-  #   {:noreply,
-  #     socket
-  #     |> assign(modal: "chess-modal")
-  #     |> assign(winner: winner_str(winner))
-  #     |> assign(game_over_reason: reason)
-  #     |> push_event("refresh-board", %{test: ""})
-  #   }
-  # end
-
-  def handle_event("game-over", %{"status" => status}, socket) do
+  def handle_event("game-over", _, socket) do
     {:noreply,
       socket
-      |> assign(modal: "chess-modal")
-      |> assign(game_over_status: status)
-      |> push_event("refresh-board", %{test: ""})
+      |> assign(playing_ai_battle: false)
     }
   end
 
@@ -68,7 +56,7 @@ defmodule LiveTestWeb.ChessLive do
 
   def handle_event("white-player-settings-updated", %{"white_player_settings" => settings} = _params, socket) do
     type = settings["player_type"]
-    depth = settings["depth"] || Player.default_depth()
+    {depth, _} = Integer.parse(settings["depth"])
     new_white_player = %Player{type: String.to_existing_atom(type), depth: depth}
     {:noreply,
       socket
@@ -91,12 +79,45 @@ defmodule LiveTestWeb.ChessLive do
     }
   end
 
-  def handle_event("toggle-ai-battle", _, socket) do
-    {:noreply,
-      socket
-      |> assign(playing_ai_battle: !socket.assigns.playing_ai_battle)
-      |> push_event("toggle-ai-battle", %{})
-    }
+  def handle_event("toggle-ai-battle", _, %{assigns: %{white_player: white_player, black_player: black_player}} = socket) do
+    cond do
+      white_player.type != :manual && black_player.type != :manual ->
+        {:noreply,
+          socket
+          |> assign(playing_ai_battle: !socket.assigns.playing_ai_battle)
+          |> push_event("toggle-ai-battle", %{})
+        }
+      white_player.type != :manual ->
+        player = %Player{type: :ai_minimax, depth: black_player.depth}
+        {:noreply,
+          socket
+          |> assign(playing_ai_battle: !socket.assigns.playing_ai_battle)
+          |> assign(black_player: player)
+          |> push_event("update-black-player-settings", %{type: player.type, depth: player.depth})
+          |> push_event("toggle-ai-battle", %{})
+        }
+      black_player.type != :manual ->
+        player = %Player{type: :ai_minimax, depth: white_player.depth}
+        {:noreply,
+          socket
+          |> assign(playing_ai_battle: !socket.assigns.playing_ai_battle)
+          |> assign(white_player: player)
+          |> push_event("update-white-player-settings", %{type: player.type, depth: player.depth})
+          |> push_event("toggle-ai-battle", %{})
+        }
+      true ->
+        new_white_player = %Player{type: :ai_minimax, depth: white_player.depth}
+        new_black_player = %Player{type: :ai_minimax, depth: black_player.depth}
+        {:noreply,
+          socket
+          |> assign(playing_ai_battle: !socket.assigns.playing_ai_battle)
+          |> assign(white_player: new_white_player)
+          |> assign(black_player: new_black_player)
+          |> push_event("update-white-player-settings", %{type: new_white_player.type, depth: new_white_player.depth})
+          |> push_event("update-black-player-settings", %{type: new_black_player.type, depth: new_black_player.depth})
+          |> push_event("toggle-ai-battle", %{})
+        }
+    end
   end
 
   def handle_event("update-score", %{"score" => score}, socket) do
@@ -149,7 +170,7 @@ defmodule LiveTestWeb.ChessLive do
         </button>
       </div>
       <div class="col-start-2 col-span-1">
-        <button id="aiBtn" phx-click="toggle-ai-battle" class={"w-full inline-block px-6 py-2.5 bg-gray-600 text-white font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-gray-700 hover:shadow-lg focus:bg-gray-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-gray-800 active:shadow-lg transition duration-150 ease-in-out" <> if @white_player.type != :manual and @black_player.type != :manual, do: "", else: " hidden"}>
+        <button id="aiBtn" phx-click="toggle-ai-battle" class="w-full inline-block px-6 py-2.5 bg-gray-600 text-white font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-gray-700 hover:shadow-lg focus:bg-gray-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-gray-800 active:shadow-lg transition duration-150 ease-in-out">
           <%= if !@playing_ai_battle, do: "AI vs AI", else: "Pause" %>
         </button>
       </div>

@@ -28,9 +28,12 @@
     </div>
   </div>
 </div>
-
-<%= live_component LiveTest.ChessModalNewComponent %>
-<%= live_component LiveTest.ChessModalFenComponent %>
+<div phx-update="ignore">
+  <%= live_component LiveTest.ChessModalNewComponent %>
+</div>
+<div phx-update="ignore">
+  <%= live_component LiveTest.ChessModalFenComponent %>
+</div>
 
 <link rel="stylesheet"
       href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css"

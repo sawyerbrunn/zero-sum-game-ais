@@ -110,14 +110,14 @@ function dynamicEvalGame(game, move, score) {
       return 0;
     }
   
-    if (game.in_check() && Math.abs(score) < 500) {
+    if (game.in_check()) {
       // Black is in check!
       if (move.color === 'w') {
-        score += 25;
+        score += 50;
       }
       // White is in check!
       else {
-        score -= 25;
+        score -= 50;
       }
     }
   

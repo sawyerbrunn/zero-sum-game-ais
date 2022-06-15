@@ -1,4 +1,4 @@
-import {dynamicEvalGame} from "./evaluate_board.js"
+import {dynamicEvalGame, staticEvalGame} from "./evaluate_board.js"
 
 function minimax(game, depth, alpha, beta, isMaximizer, score) {
   // Depth at 0?
@@ -18,6 +18,15 @@ function minimax(game, depth, alpha, beta, isMaximizer, score) {
     } else {
       return [null, 0, depth]
     }
+  }
+
+  if (game.history().length < 2 && score === 0) {
+    // Return a random move so AIs play different games
+    const randomIdx = Math.floor(Math.random() * children.length);
+    var randomMove = game.ugly_move(children[randomIdx]);
+    var newScore = dynamicEvalGame(game, randomMove, score);
+    game.undo();
+    return [randomMove, newScore, 0]
   }
 
   // Initialize minimax variables
@@ -60,27 +69,6 @@ function minimax(game, depth, alpha, beta, isMaximizer, score) {
       }
       beta = Math.min(childVal, beta)
     }
-    // if (isMaximizer && (childVal > maxVal)) {
-    //   bestDepth = 0;
-    //   bestMove = currMove;
-    //   maxVal = childVal;
-    //   alpha = Math.max(childVal, alpha)
-    // } else if (isMaximizer && childVal === maxVal && childDepth >= bestDepth) {
-    //   bestDepth = childDepth
-    //   bestMove = currMove;
-    //   maxVal = childVal;
-    //   alpha = Math.max(childVal, alpha)
-    // } else if (!isMaximizer && childVal < minVal) {
-    //   bestDepth = 0;
-    //   bestMove = currMove;
-    //   minVal = childVal;
-    //   beta = Math.min(childVal, beta)
-    // } else if (!isMaximizer && childVal === minVal && childDepth >= bestDepth) {
-    //   bestDepth = childDepth;
-    //   bestMove = currMove;
-    //   minVal = childVal;
-    //   beta = Math.min(childVal, beta)
-    // }
 
     if (shouldPrune(alpha, beta)) {
       break;

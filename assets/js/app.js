@@ -251,9 +251,9 @@ hooks.myBoard = {
       }
     }
 
-    // function announceGameOver(status) {
-    //   mount.pushEvent("game-over", {status});
-    // }
+    function announceGameOver() {
+      mount.pushEvent("game-over", {});
+    }
 
     function requestAiMove() {
       if (game.game_over()) {
@@ -434,6 +434,7 @@ hooks.myBoard = {
 
     function doAiBattle() {
       if (game.game_over()) {
+        announceGameOver();
         return;
       }
       if (!playingAiBattle) {
