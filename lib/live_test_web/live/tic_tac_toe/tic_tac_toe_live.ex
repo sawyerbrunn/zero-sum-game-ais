@@ -20,6 +20,7 @@ defmodule LiveTestWeb.TicTacToeLive do
       |> assign(ai_opts: @ai_opts)
       |> assign(x_opt: :manual)
       |> assign(o_opt: :ai_minimax)
+      |> maybe_request_ai_move()
     }
   end
 
@@ -44,12 +45,12 @@ defmodule LiveTestWeb.TicTacToeLive do
       true ->
         case Board.make_move(board, turn, index) do
           %Board{current_turn: new_turn} = new_board ->
-            maybe_request_ai_move(new_board, socket.assigns.x_opt, socket.assigns.o_opt)
             {:noreply,
               socket
               |> assign(board: new_board)
               |> assign(turn: new_turn)
               |> assign(winner: Board.find_winner(new_board))
+              |> maybe_request_ai_move()
             }
           error ->
             IO.inspect("illegal move attempted. Reason: #{error}")
@@ -159,15 +160,16 @@ defmodule LiveTestWeb.TicTacToeLive do
     # end
   end
 
-  defp maybe_request_ai_move(new_board, x_opt, o_opt) do
+  defp maybe_request_ai_move(%{assigns: %{board: board, x_opt: x_opt, o_opt: o_opt}} = socket) do
     cond do
-      new_board.current_turn == "X" and x_opt != :manual ->
+      board.current_turn == "X" and x_opt != :manual ->
         Process.send_after(self(), :ai_move, 1000)
-      new_board.current_turn == "O" and o_opt != :manual ->
+      board.current_turn == "O" and o_opt != :manual ->
         Process.send_after(self(), :ai_move, 1000)
       true ->
         nil
     end
+    socket
   end
 
   ### Components ###
