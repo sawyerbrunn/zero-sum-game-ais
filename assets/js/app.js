@@ -209,13 +209,36 @@ hooks.myBoard = {
       board.position(game.fen());
     }
 
+    // This is a fix for Chessboard.js piece flickering on mobile
+    var imgCache = {};
+    function pieceTheme(piece) {
+      function getBase64Image(img) {
+        var canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+        var dataURL = canvas.toDataURL("image/png");
+        return dataURL;     
+      }
+      if (imgCache[piece]) {
+        return imgCache[piece];
+      } else {
+        var img = new Image()
+        img.onload = function() {
+          imgCache[piece] = getBase64Image(img);
+        }
+        img.src = '/images/' + piece + '.png'
+        return img.src;
+      }
+    }
+
     var config = {
       draggable: true,
       position: 'start',
       onDragStart: onDragStart,
       onDrop: onDrop,
-      pieceTheme: 'images/{piece}.png',
-      // onMoveEnd: onMoveEnd,
+      pieceTheme: pieceTheme,
       onMouseoutSquare: onMouseoutSquare,
       onMouseoverSquare: onMouseoverSquare,
       onSnapEnd: onSnapEnd
