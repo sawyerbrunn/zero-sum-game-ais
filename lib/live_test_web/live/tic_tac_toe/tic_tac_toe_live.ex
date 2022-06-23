@@ -18,8 +18,9 @@ defmodule LiveTestWeb.TicTacToeLive do
       |> assign(turn: board.current_turn)
       |> assign(winner: nil)
       |> assign(ai_opts: @ai_opts)
-      |> assign(x_opt: :manual)
-      |> assign(o_opt: :ai_minimax)
+      |> assign(x_opt: :ai_minimax)
+      |> assign(o_opt: :manual)
+      |> assign(ai_player: "X")
       |> maybe_request_ai_move()
     }
   end
@@ -68,6 +69,7 @@ defmodule LiveTestWeb.TicTacToeLive do
       |> assign(board: board)
       |> assign(turn: board.current_turn)
       |> clear_flash()
+      |> maybe_request_ai_move()
     }
   end
 
@@ -91,6 +93,16 @@ defmodule LiveTestWeb.TicTacToeLive do
       |> assign(board: new_board)
       |> assign(turn: new_board.current_turn)
       |> assign(winner: Board.find_winner(new_board))
+    }
+  end
+
+  def handle_event("ai-player-updated", %{"ai_player" => %{"ai_player" => val}}, socket) do
+    {:noreply,
+      socket
+      |> assign(ai_player: val)
+      |> assign(x_opt: other_opt(socket.assigns.x_opt))
+      |> assign(o_opt: other_opt(socket.assigns.o_opt))
+      |> maybe_request_ai_move()
     }
   end
 
@@ -142,22 +154,6 @@ defmodule LiveTestWeb.TicTacToeLive do
         # The game is over.
         {:noreply, socket}
     end
-    # case Board.list_legal_moves(board) do
-    #   [] ->
-    #     {:noreply, socket}
-    #   legal_moves ->
-    #     index = Enum.random(legal_moves)
-
-    #     # Assumes chosen move is legal
-    #     new_board = Board.make_move(board, socket.assigns.turn, index)
-    #     new_turn = new_board.current_turn
-    #     {:noreply,
-    #       socket
-    #       |> assign(board: new_board)
-    #       |> assign(turn: new_turn)
-    #       |> assign(winner: Board.find_winner(new_board))
-    #     }
-    # end
   end
 
   defp maybe_request_ai_move(%{assigns: %{board: board, x_opt: x_opt, o_opt: o_opt}} = socket) do
@@ -206,4 +202,7 @@ defmodule LiveTestWeb.TicTacToeLive do
     </svg>
     """
   end
+
+  defp other_opt(:manual), do: :ai_minimax
+  defp other_opt(:ai_minimax), do: :manual
 end

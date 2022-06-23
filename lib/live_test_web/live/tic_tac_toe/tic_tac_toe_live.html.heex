@@ -33,7 +33,25 @@
       </div>
 
       <div class="py-2 md:py-0">
-        AI settings go here
+        <%= form_for :ai_player, "#", [phx_change: "ai-player-updated"], fn f -> %>
+            <label>AI Player</label>
+            <%= select f, :ai_player, ["X", "O"] , selected: @ai_player,
+            class: "form-select appearance-none
+              block
+              w-full
+              px-3
+              py-1.5
+              text-base
+              font-normal
+              text-gray-700
+              bg-white bg-clip-padding bg-no-repeat
+              border border-solid border-gray-300
+              rounded
+              transition
+              ease-in-out
+              m-0
+              focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" %>
+        <% end %>
       </div>
 
       <div>
