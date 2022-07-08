@@ -18,9 +18,8 @@ defmodule LiveTestWeb.TicTacToeLive do
       |> assign(turn: board.current_turn)
       |> assign(winner: nil)
       |> assign(ai_opts: @ai_opts)
-      |> assign(x_opt: :ai_minimax)
-      |> assign(o_opt: :manual)
-      |> assign(ai_player: "X")
+      |> assign(ai_player: nil)
+      |> assign_random_ai()
       |> maybe_request_ai_move()
     }
   end
@@ -69,6 +68,7 @@ defmodule LiveTestWeb.TicTacToeLive do
       |> assign(board: board)
       |> assign(turn: board.current_turn)
       |> clear_flash()
+      |> then(& if &1.assigns.ai_player == nil, do: assign_random_ai(&1), else: &1)
       |> maybe_request_ai_move()
     }
   end
@@ -93,17 +93,27 @@ defmodule LiveTestWeb.TicTacToeLive do
       |> assign(board: new_board)
       |> assign(turn: new_board.current_turn)
       |> assign(winner: Board.find_winner(new_board))
+      |> maybe_request_ai_move()
     }
   end
 
   def handle_event("ai-player-updated", %{"ai_player" => %{"ai_player" => val}}, socket) do
-    {:noreply,
-      socket
-      |> assign(ai_player: val)
-      |> assign(x_opt: other_opt(socket.assigns.x_opt))
-      |> assign(o_opt: other_opt(socket.assigns.o_opt))
-      |> maybe_request_ai_move()
-    }
+    if val == "" do
+      {:noreply,
+        socket
+        |> assign(ai_player: nil)
+        |> assign_random_ai()
+        |> maybe_request_ai_move()
+      }
+    else
+      {:noreply,
+        socket
+        |> assign(ai_player: val)
+        |> assign(x_opt: other_opt(socket.assigns.x_opt))
+        |> assign(o_opt: other_opt(socket.assigns.o_opt))
+        |> maybe_request_ai_move()
+      }
+    end
   end
 
   @impl true
@@ -166,6 +176,14 @@ defmodule LiveTestWeb.TicTacToeLive do
         nil
     end
     socket
+  end
+
+  defp assign_random_ai(socket) do
+    opts = [:manual, :ai_minimax]
+    [x_opt, o_opt] = Enum.shuffle(opts)
+    socket
+    |> assign(x_opt: x_opt)
+    |> assign(o_opt: o_opt)
   end
 
   ### Components ###

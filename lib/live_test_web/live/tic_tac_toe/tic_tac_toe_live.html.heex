@@ -28,6 +28,23 @@
     </div>
     <div class="md:col-start-6 md:col-span-3 md:pl-4">
 
+      <div class="pt-2">
+        Status: 
+        <%= if @winner == nil do %>
+          <span class="text-semibold"><%= @turn %></span> to move.
+        <% else %>
+          <%= @winner %> has won!
+        <% end %>
+      </div>
+
+      <div>
+        <%= if @x_opt == :manual do %>
+          You are playing X. The Computer is O.
+        <% else %>
+          You are playing O. The Computer is X.
+        <% end %>
+      </div>
+
       <div class="py-2">
         <.game_buttons_component />
       </div>
@@ -35,7 +52,7 @@
       <div class="py-2 md:py-0">
         <%= form_for :ai_player, "#", [phx_change: "ai-player-updated"], fn f -> %>
             <label>AI Player</label>
-            <%= select f, :ai_player, ["X", "O"] , selected: @ai_player,
+            <%= select f, :ai_player, [{"Random", nil}, {"X", "X"}, {"O", "O"}] , selected: @ai_player,
             class: "form-select appearance-none
               block
               w-full
@@ -52,16 +69,6 @@
               m-0
               focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none" %>
         <% end %>
-      </div>
-
-      <div>
-        Score here
-      </div>
-
-      <div class="py-2">
-        <div class="w-full rounded-md shadow border border-gray-500">
-          Game history here
-        </div>
       </div>
 
     </div>
