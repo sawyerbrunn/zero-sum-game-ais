@@ -6,7 +6,7 @@ It currently has chess and tic-tac-toe built out, with plans to build out connec
 ## How it's built
 This is a Phoenix project that leverages Phoenix LiveView for most web interactions, along with open-source [Tailwind CSS](https://tailwindcss.com/) components such as [tailwind-elements](https://tailwind-elements.com/).
 
-It also uses some amazing open-sourced node packages available on NPM to handle Chess rules and the general the Chess UI framework:
+It also uses some amazing open-source node packages available on NPM to handle Chess rules and the general the Chess UI framework:
 - [Chessboard.js](https://chessboardjs.com/)
 - [Chess.js](https://github.com/jhlywa/chess.js/blob/master/README.md)
 - [Jquery](https://github.com/jquery/jquery)
