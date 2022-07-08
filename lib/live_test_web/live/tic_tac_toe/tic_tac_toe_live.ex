@@ -93,6 +93,7 @@ defmodule LiveTestWeb.TicTacToeLive do
       |> assign(board: new_board)
       |> assign(turn: new_board.current_turn)
       |> assign(winner: Board.find_winner(new_board))
+      |> maybe_request_ai_move()
     }
   end
 
