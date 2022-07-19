@@ -1,4 +1,4 @@
-# AI Demos - Sawyer's Games
+# AI Demos - Zero Sum Games
 All games are playable at https://sawyerbrunn.com and deployed via Gigalixir.
 ## About
 This project is a demonstration of a few different zero-sum game UIs and how well Minimax AIs can play them.
