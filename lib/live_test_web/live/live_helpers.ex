@@ -14,14 +14,14 @@ defmodule LiveTest.LiveHelpers do
       <li class="nav-item p-2">
         <a
           class="nav-link text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-          href="https://github.com/sawyerbrunn/sawyer-games"
+          href="https://github.com/sawyerbrunn/zero-sum-game-ais"
           target="_blank"
           >Source Code</a>
       </li>
       <li class="nav-item p-2">
         <a
           class="nav-link text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-          href="https://github.com/sawyerbrunn/sawyer-games/issues"
+          href="https://github.com/sawyerbrunn/zero-sum-game-ais/issues"
           target="_blank"
           >Bug Report</a>
       </li>
