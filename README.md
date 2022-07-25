@@ -13,7 +13,7 @@ It also uses some amazing open-source node packages available on NPM to handle C
 
 ## Running Locally
 This project does not require a database, so setup is very simple. 
-Follow [these instructions](https://elixir-lang.org/install.html) to install elixir. You may also need to `brew install node`.
+Follow [these instructions](https://elixir-lang.org/install.html) to install elixir. You may also need to install Node/NPM with `brew install node`.
 Then, to run the phoenix server locally:
 
   * Install elixir dependencies with `mix deps.get`
