@@ -22,4 +22,4 @@ Then, to run the phoenix server locally:
 
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
-Updated 07/27/2023
+Updated 04/01/2024
